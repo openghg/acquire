@@ -1,9 +1,7 @@
 schema_version: 20180708
 name: access-root
-version: 0.0.30
+version: 0.0.42
 runtime: docker
-type: sync
-timeout: 20
 triggers:
 - name: root
   type: http

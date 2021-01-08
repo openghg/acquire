@@ -13,32 +13,36 @@ def route(ctx: InvokeContext, data: Dict) -> Response:
             Response: Fn FDK response object containing function call data
             and data returned from function call
     """
-    function = data["function"]
-    args = data["args"]
+    # function = data["function"]
+    # args = data["args"]
 
     headers = {"Content-type": "application/json"}
+    
+    response_data = {"this": "that"}
 
-    try:
-        response_data = {"this": "that"}
+    return Response(ctx=ctx, response_data=response_data, headers=headers)
 
-        return Response(ctx=ctx, response_data=response_data, headers=headers)
-        if function == "request":
-            from access.request import run as _request
+    # try:
+    #     response_data = {"this": "that"}
 
-            response_data = _request(args)
-        elif function == "run_calculation":
-            from access.run_calculation import run as _run_calculation
+    #     return Response(ctx=ctx, response_data=response_data, headers=headers)
+    #     if function == "request":
+    #         from access.request import run as _request
 
-            response_data = _run_calculation(args)
-        else:
-            response_data = {"Error": "Unknown function"}
+    #         response_data = _request(args)
+    #     elif function == "run_calculation":
+    #         from access.run_calculation import run as _run_calculation
+
+    #         response_data = _run_calculation(args)
+    #     else:
+    #         response_data = {"Error": "Unknown function"}
         
-        headers = {"Content-type": "application/json"}
+    #     headers = {"Content-type": "application/json"}
 
 
-    except Exception:
-        tb = traceback.format_exc()
-        return Response(ctx=ctx, response_data={"error": str(tb)})
+    # except Exception:
+    #     tb = traceback.format_exc()
+    #     return Response(ctx=ctx, response_data={"error": str(tb)})
 
 
 
