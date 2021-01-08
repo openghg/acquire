@@ -44,8 +44,8 @@ COPY --from=build-stage /python /python
 
 # RUN mkdir /extralibs
 
-# ENV PYTHONPATH=/python \
-#     LD_LIBRARY_PATH=/extralibs:$LD_LIBRARY_PATH
+ENV PYTHONPATH=/python 
+#    \ LD_LIBRARY_PATH=/extralibs:$LD_LIBRARY_PATH
 
 # Copy in the updated version of oci's __init__.py that we
 # have fixed to lazy load modules (thereby making it much quicker)
@@ -57,16 +57,18 @@ COPY --from=build-stage /python /python
 # ADD fixed/fast_fdk__init__.py /python/fdk/__init__.py
 
 # Add the function last as this is the thing that will change most often
-# ENV PYTHON_EXT=/python/acquire_services
+ENV PYTHON_EXT=/python/acquire_services
 
-# RUN mkdir $PYTHON_EXT
-# # ADD Acquire $PYTHON_EXT/Acquire
-# # ADD admin $PYTHON_EXT/admin
+RUN mkdir $PYTHON_EXT
+ADD Acquire $PYTHON_EXT/Acquire
+ADD admin $PYTHON_EXT/admin
+ADD caller $PYTHON_EXT/acquire_caller
 
-# ENV PYTHONPATH=$PYTHONPATH:$PYTHON_EXT
+ENV PYTHONPATH=$PYTHONPATH:$PYTHON_EXT
 
-# RUN python3 -m compileall $PYTHON_EXT/Acquire/*
-# RUN python3 -m compileall $PYTHON_EXT/admin/*
+RUN python3 -m compileall $PYTHON_EXT/Acquire/*
+RUN python3 -m compileall $PYTHON_EXT/admin/*
+RUN python3 -m compileall $PYTHON_EXT/acquire_caller/*
 
 ENTRYPOINT ["bash"]
 

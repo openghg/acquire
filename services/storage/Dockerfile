@@ -1,15 +1,16 @@
-FROM chryswoods/acquire-base:latest
+FROM openghg/acquire-base:latest
 
-# Need to be user root or Fn exits with
-# {"message":"internal server error"}
 USER root
+WORKDIR /function
 
-WORKDIR $HOME
 RUN mkdir $PYTHON_EXT/storage
 
 ADD *.py $PYTHON_EXT/storage/
 RUN python3 -m compileall $PYTHON_EXT/storage/*.py
 
-ADD route.py secret_key ./
+# ADD route.py secret_key ./
+ADD route.py ./
 
-ENTRYPOINT ["python", "route.py"]
+USER $FN_USER
+
+ENTRYPOINT ["/python/bin/fdk", "/function/route.py", "route"]

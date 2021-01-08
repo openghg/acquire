@@ -1,41 +1,21 @@
+from fdk.context import InvokeContext
+from fdk.response import Response
+from io import BytesIO
+from typing import Dict, Union
 
 
-def accounting_functions(function, args):
-    """This function routes calls to all of the accounting service's
-       extra functions
+def route(ctx: InvokeContext, data: Union[Dict, BytesIO]) -> Response:
+    """Route the call to a specific accounting function
 
-       Args:
-            function (str): for selection of function to call
-            args: arguments to be passed to the selected function
-
-        Returns:
-            function: If valid function selected, function with args passed
-            else None
+    Args:
+        ctx: Invoke context. This is passed by Fn to the function
+        data: Data passed to the function by the user
+    Returns:
+        Response: Fn FDK response object containing function call data
+        and data returned from function call
     """
-    if function == "cash_cheque":
-        from accounting.cash_cheque import run as _cash_cheque
-        return _cash_cheque(args)
-    elif function == "create_account":
-        from accounting.create_account import run as _create_account
-        return _create_account(args)
-    elif function == "deposit":
-        from accounting.deposit import run as _deposit
-        return _deposit(args)
-    elif function == "get_account_uids":
-        from accounting.get_account_uids import run as _get_account_uids
-        return _get_account_uids(args)
-    elif function == "get_info":
-        from accounting.get_info import run as _get_info
-        return _get_info(args)
-    elif function == "perform":
-        from accounting.perform import run as _perform
-        return _perform(args)
-    else:
-        from admin.handler import MissingFunctionError
-        raise MissingFunctionError()
+    from acquire_caller.caller import call_fn
 
+    service_name = "accounting"
 
-if __name__ == "__main__":
-    import fdk
-    from admin.handler import create_async_handler
-    fdk.handle(create_async_handler(accounting_functions))
+    return call_fn(ctx=ctx, data=data, service_name=service_name)

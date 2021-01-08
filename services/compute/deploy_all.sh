@@ -1,3 +1,3 @@
 #!/bin/bash
-export FN_REGISTRY=chryswoods
+# export FN_REGISTRY=chryswoods
 fn --verbose deploy --local --all

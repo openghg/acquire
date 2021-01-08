@@ -1,7 +1,5 @@
 FROM openghg/acquire-base:latest
 
-# Need to be user root or Fn exits with
-# {"message":"internal server error"}
 USER root
 WORKDIR /function
 

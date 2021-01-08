@@ -1,25 +1,21 @@
+from fdk.context import InvokeContext
+from fdk.response import Response
+from io import BytesIO
+from typing import Dict, Union
 
 
-def compute_functions(function, args):
-    """These are all of the additional functions for the compute service"""
-    if function == "submit_job":
-        from compute.submit_job import run as _submit_job
-        return _submit_job(args)
-    elif function == "get_job":
-        from compute.get_job import run as _get_job
-        return _get_job(args)
-    elif function == "get_pending_job_uids":
-        from compute.get_pending_job_uids import run as _get_job_uids
-        return _get_job_uids(args)
-    elif function == "set_cluster":
-        from compute.set_cluster import run as _set_cluster
-        return _set_cluster(args)
-    else:
-        from admin.handler import MissingFunctionError
-        raise MissingFunctionError()
+def route(ctx: InvokeContext, data: Union[Dict, BytesIO]) -> Response:
+    """Route the call to a specific compute function
 
+    Args:
+        ctx: Invoke context. This is passed by Fn to the function
+        data: Data passed to the function by the user
+    Returns:
+        Response: Fn FDK response object containing function call data
+        and data returned from function call
+    """
+    from acquire_caller.caller import call_fn
 
-if __name__ == "__main__":
-    import fdk
-    from admin.handler import create_async_handler
-    fdk.handle(create_async_handler(compute_functions))
+    service_name = "compute"
+
+    return call_fn(ctx=ctx, data=data, service_name=service_name)
