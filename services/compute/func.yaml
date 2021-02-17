@@ -1,6 +1,6 @@
 schema_version: 20180708
 name: compute-root
-version: 0.0.6
+version: 0.0.9
 runtime: docker
 triggers:
 - name: root

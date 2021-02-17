@@ -1,20 +1,23 @@
-
 from Acquire.Identity import Authorisation, AuthorisationError
-
 from Acquire.Access import RunRequest, WorkSheet
-
 from Acquire.Client import Cheque
 
+from typing import Dict
 
-def run(args):
+
+def run(args: Dict) -> Dict:
     """This function is used to handle requests to run compute jobs using
-       the system. This will be passed in the RunRequest with a valid
-       authorisation and also a Cheque to pay for the calculation.
+    the system. This will be passed in the RunRequest with a valid
+    authorisation and also a Cheque to pay for the calculation.
 
-       This will return the UID of the running job plus the location
-       to which the output will be written
+    This will return the UID of the running job plus the location
+    to which the output will be written
+
+    Args:
+        args: Dictionary of arguments
+    Returns:
+        dict: Dictionary of job details
     """
-
     request = None
     authorisation = None
     cheque = None
@@ -32,14 +35,10 @@ def run(args):
         return
 
     if authorisation is None:
-        raise AuthorisationError(
-            "You must provide a valid authorisation to make the request %s"
-            % str(request))
+        raise AuthorisationError(f"You must provide a valid authorisation to make the request {str(request)}")
 
     if cheque is None:
-        raise AuthorisationError(
-            "You must provide a valid cheque to pay for the request %s"
-            % str(request))
+        raise AuthorisationError(f"You must provide a valid cheque to pay for the request {str(request)}")
 
     # create a job sheet to record all stages of the job
     worksheet = WorkSheet(request=request, authorisation=authorisation)
@@ -49,5 +48,4 @@ def run(args):
 
     # Return to the user the UID of the job and also the location
     # to which all output from the job is being written
-    return {"uid": worksheet.uid(),
-            "output": worksheet.output_location().to_string()}
+    return {"uid": worksheet.uid(), "output": worksheet.output_location().to_string()}

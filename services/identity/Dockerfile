@@ -8,8 +8,7 @@ RUN mkdir $PYTHON_EXT/identity
 ADD *.py $PYTHON_EXT/identity/
 RUN python3 -m compileall $PYTHON_EXT/identity/*.py
 
-# ADD route.py secret_key ./
-ADD route.py ./
+ADD route.py secret_key ./
 
 USER $FN_USER
 

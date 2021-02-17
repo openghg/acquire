@@ -8,8 +8,7 @@ RUN mkdir $PYTHON_EXT/access
 ADD *.py $PYTHON_EXT/access/
 RUN python3 -m compileall $PYTHON_EXT/access/*.py
 
-# ADD route.py secret_key ./
-ADD route.py ./
+ADD route.py secret_key ./
 
 USER $FN_USER
 

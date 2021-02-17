@@ -8,8 +8,7 @@ RUN mkdir $PYTHON_EXT/accounting
 ADD *.py $PYTHON_EXT/accounting/
 RUN python3 -m compileall $PYTHON_EXT/accounting/*.py
 
-# ADD route.py secret_key ./
-ADD route.py ./
+ADD route.py secret_key ./
 
 USER $FN_USER
 

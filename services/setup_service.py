@@ -5,6 +5,7 @@ import os
 import getpass
 
 from yaml import load
+
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -14,29 +15,27 @@ from Acquire.Crypto import PrivateKey, Hash
 from Acquire.ObjectStore import bytes_to_string, string_to_bytes
 
 parser = argparse.ArgumentParser(
-            description="Set up and configure an Acquire function "
-                        "service (generate and upload keys, connect "
-                        "to the cloud object store etc.)",
-            epilog="setup_service is created to support Acquire, and "
-                   "is distributed under the APACHE license",
-            prog="setup_service.py")
+    description="Set up and configure an Acquire function "
+    "service (generate and upload keys, connect "
+    "to the cloud object store etc.)",
+    epilog="setup_service is created to support Acquire, and " "is distributed under the APACHE license",
+    prog="setup_service.py",
+)
 
-parser.add_argument('-c', '--config', nargs=1,
-                    help="The yaml configuration file that is used to "
-                         "describe and configure the service")
+parser.add_argument(
+    "-c", "--config", nargs=1, help="The yaml configuration file that is used to describe and configure the service"
+)
 
-parser.add_argument('-d', '--dry-run', action="store_true",
-                    help="Don't do anything (dry run only)")
+parser.add_argument("-d", "--dry-run", action="store_true", help="Don't do anything (dry run only)")
 
-parser.add_argument('-v', '--verbose', action="store_true",
-                    help="Verbose output")
+parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
 args = parser.parse_args()
 
 try:
     config_file = args.config[0]
-except:
-    config_file = None
+except TypeError:
+    raise ValueError("Path to config file must be given.")
 
 dryrun = args.dry_run
 verbose = args.verbose
@@ -49,15 +48,13 @@ if os.path.exists(service_file):
         service_salt = service_info["salt"]
 
     while True:
-        password = getpass.getpass(
-                    prompt="Please enter the service primary password: ")
+        password = getpass.getpass(prompt="Please enter the service primary password: ")
 
         skeleton_password = password
         password = Hash.multi_md5(password, service_salt)
 
         try:
-            service_key = PrivateKey.from_data(service_info["key"],
-                                               passphrase=password)
+            service_key = PrivateKey.from_data(service_info["key"], passphrase=password)
             break
         except:
             print("Password incorrect. Try again.")
@@ -67,10 +64,8 @@ if os.path.exists(service_file):
     keep = True
 else:
     while True:
-        password = getpass.getpass(
-            prompt="Please enter the service primary password: ")
-        password2 = getpass.getpass(
-            prompt="Please enter the password again: ")
+        password = getpass.getpass(prompt="Please enter the service primary password: ")
+        password2 = getpass.getpass(prompt="Please enter the password again: ")
 
         if password == password2:
             break
@@ -92,12 +87,9 @@ if old_config is not None:
     if old_config["service"] != config["service"]:
         for key in config["service"].keys():
             if old_config["service"][key] != config["service"][key]:
-                print("\nDisagree key = %s\n%s\n%s" %
-                      (key, old_config["service"][key],
-                       config["service"][key]))
+                print("\nDisagree key = %s\n%s\n%s" % (key, old_config["service"][key], config["service"][key]))
 
-        raise PermissionError("Config disagreement: %s vs %s" %
-                              (config["service"], old_config["service"]))
+        raise PermissionError("Config disagreement: %s vs %s" % (config["service"], old_config["service"]))
 
     config = old_config
 
@@ -129,32 +121,30 @@ def run_command(cmd):
 
 def generate_ssl_key(name, passphrase):
     """Generate a private/public pair of SSH keys called
-       {name}.pem and {name}_public.pem, with the private
-       key encrypted using the supplied passphrase. The
-       names of the keys are returned
+    {name}.pem and {name}_public.pem, with the private
+    key encrypted using the supplied passphrase. The
+    names of the keys are returned
     """
     privkey = "%s.pem" % name
     pubkey = "%s_public.pem" % name
 
-    cmd = "openssl genrsa -out %s -aes128 -passout pass:%s 2048" % (
-                                            privkey, passphrase)
+    cmd = "openssl genrsa -out %s -aes128 -passout pass:%s 2048" % (privkey, passphrase)
     run_command(cmd)
 
-    cmd = "openssl rsa -pubout -in %s -out %s -passin pass:%s" % (
-                                            privkey, pubkey, passphrase)
+    cmd = "openssl rsa -pubout -in %s -out %s -passin pass:%s" % (privkey, pubkey, passphrase)
     run_command(cmd)
 
     if not (os.path.exists(privkey) and os.path.exists(pubkey)):
         raise PermissionError("Cannot find the necessary SSH keys!")
 
-    # now get the fingerprint of the key
-    cmd = "openssl rsa -in %s -passin pass:%s -pubout -outform DER | " \
-          "openssl md5 -c" % (privkey, passphrase)
+    #  now get the fingerprint of the key
+    cmd = "openssl rsa -in %s -passin pass:%s -pubout -outform DER | " "openssl md5 -c" % (privkey, passphrase)
     lines = os.popen(cmd, "r").readlines()
     fingerprint = lines[0][0:-1]
     fingerprint = fingerprint.split(" ")[-1]
 
     return (privkey, pubkey, fingerprint)
+
 
 if provider == "gcp":
     key = provider_config["key"]
@@ -182,8 +172,7 @@ elif provider == "oci":
 
     if generate_key:
         print("Generating new keys...")
-        (privkey, pubkey, fingerprint) = generate_ssl_key("oci_key",
-                                                          passphrase)
+        (privkey, pubkey, fingerprint) = generate_ssl_key("oci_key", passphrase)
         with open(privkey, "r") as FILE:
             key = FILE.readlines()
         config["credentials"]["key"] = key
@@ -193,9 +182,7 @@ elif provider == "oci":
     unique_salt = str(fingerprint)
 
 else:
-    raise TypeError("Cannot recognise the type of service that "
-                    "is being configured. This should be either "
-                    "gcp or oci")
+    raise TypeError("Cannot recognise the type of service that " "is being configured. This should be either " "gcp or oci")
 
 # now save the configuration to disk
 d = {}
@@ -270,4 +257,3 @@ run_command(cmd)
 
 cmd = "fn config app %s SECRET_KEY '%s'" % (service_name, secret_key)
 run_command(cmd)
-

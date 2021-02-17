@@ -1,24 +1,16 @@
-from Acquire.Service import get_service_account_bucket
-from Acquire.Service import call_function
-
-from Acquire.Crypto import PrivateKey
-from Acquire.ObjectStore import ObjectStore, string_to_bytes
 from Acquire.Identity import Authorisation, AuthorisationError
 from Acquire.Access import Request
 
-
-class RequestError(Exception):
-    pass
+from typing import Dict
 
 
-def run(args):
+def run(args: Dict) -> None:
     """This function is used to handle requests to access resources
 
     Args:
-        args (dict): contains data for authorisation service
+        args: Arguments for data authentication service
     Returns:
-        dict: a dictionary containing the status of the authorisation
-                and a status message
+        dict: Dictionary containing the status of the authorisation and a status message
     """
     status = 0
     message = None
@@ -37,6 +29,6 @@ def run(args):
         message = "No request"
 
     if authorisation is None:
-        raise AuthorisationError("You must provide a valid authorisation to make the request %s" % str(request))
+        raise AuthorisationError(f"You must provide a valid authorisation to make the request {str(request)}")
 
     authorisation.verify(request.signature())

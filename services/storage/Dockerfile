@@ -8,8 +8,7 @@ RUN mkdir $PYTHON_EXT/storage
 ADD *.py $PYTHON_EXT/storage/
 RUN python3 -m compileall $PYTHON_EXT/storage/*.py
 
-# ADD route.py secret_key ./
-ADD route.py ./
+ADD route.py secret_key ./
 
 USER $FN_USER
 

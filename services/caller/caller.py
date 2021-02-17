@@ -8,7 +8,7 @@ from importlib import import_module
 
 
 def call_fn(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str) -> Response:
-    """ Template to used to call a specific service function. This function is
+    """Template to used to call a specific service function. This function is
         only called from the route functions of each respective function.
 
     Args:

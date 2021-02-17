@@ -1,3 +1,4 @@
 #!/bin/bash
-export FN_REGISTRY=chryswoods
+fn create app identity
 fn --verbose deploy --local --all
+rm secret_key
