@@ -25,7 +25,7 @@ def call_fn(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str) -
             data = json.loads(data.getvalue())
         except Exception:
             tb = traceback.format_exc()
-            return Response(ctx=ctx, response_data={"Error": str(tb)})
+            return Response(ctx=ctx, response_data={"Error": str(tb), "data": data})
 
     submodule_name = data["function"]
     args = data["args"]
