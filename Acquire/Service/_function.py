@@ -129,12 +129,10 @@ def pack_return_value(function=None, payload=None, key=None, response_key=None, 
         if public_cert:
             result["sign_with_service_key"] = public_cert.fingerprint()
 
-    elif sign_result and (key is None):
+    elif sign_result and key is None:
         from Acquire.Service import PackingError
 
-        raise PackingError(
-            "You cannot ask the service to sign the response " "without also providing a key to encrypt it with too"
-        )
+        raise PackingError("You cannot ask the service to sign the response without also providing a key to encrypt it with too")
 
     result["payload"] = payload
     now = _get_datetime_now_to_string()
@@ -145,7 +143,7 @@ def pack_return_value(function=None, payload=None, key=None, response_key=None, 
         if sign_result:
             from Acquire.Service import PackingError
 
-            raise PackingError("The service must encrypt the response before it " "can be signed.")
+            raise PackingError("The service must encrypt the response before it can be signed.")
     else:
         response = {}
 

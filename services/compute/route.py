@@ -14,8 +14,8 @@ def route(ctx: InvokeContext, data: Union[Dict, BytesIO]) -> Response:
         Response: Fn FDK response object containing function call data
         and data returned from function call
     """
-    from acquire_caller.caller import call_fn
+    from acquire_caller.acquire_call import acquire_call
 
     service_name = "compute"
 
-    return call_fn(ctx=ctx, data=data, service_name=service_name)
+    return acquire_call(ctx=ctx, data=data, service_name=service_name)

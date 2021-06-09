@@ -62,7 +62,8 @@ ENV PYTHON_EXT=/python/acquire_services
 RUN mkdir $PYTHON_EXT
 ADD Acquire $PYTHON_EXT/Acquire
 ADD admin $PYTHON_EXT/admin
-ADD caller $PYTHON_EXT/acquire_caller
+# Add this to 
+ADD acquire_caller $PYTHON_EXT/acquire_caller
 
 ENV PYTHONPATH=$PYTHONPATH:$PYTHON_EXT
 
@@ -70,7 +71,8 @@ RUN python3 -m compileall $PYTHON_EXT/Acquire/*
 RUN python3 -m compileall $PYTHON_EXT/admin/*
 RUN python3 -m compileall $PYTHON_EXT/acquire_caller/*
 
-ENTRYPOINT ["bash"]
-
 # Become the $FN_USER so that nothing runs as root
 USER $FN_USER
+
+ENTRYPOINT ["bash"]
+
