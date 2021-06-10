@@ -233,14 +233,21 @@ def create_async_handler(additional_functions=None):
 
 
 def create_handler(additional_functions=None):
+    """Function that creates the handler functions for all standard functions,
+    plus the passed additional_functions
+
+    Args:
+         additional_functions (optional): other function to pass into base_handler function
+    Returns:
+        function: Handler function
+    """
     def handler(ctx=None, data=None, loop=None):
-        """Function that creates the handler functions for all standard functions,
-        plus the passed additional_functions
+        """ Handles routing to sub-functions
 
         Args:
-             additional_functions (optional): other function for which to
-             create a handler
-
+            ctx: Invocation context
+            data: Data to be passed to base handler
+            loop: Unused
          Returns:
              function: A handler function
         """
