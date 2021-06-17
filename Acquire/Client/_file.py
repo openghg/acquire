@@ -203,8 +203,7 @@ class File:
             # will eventually need to authorise payment...
             storage_service = self._creds.storage_service()
 
-            response = storage_service.call_function(
-                                    function="upload", args=args)
+            response = storage_service.call_function(function="upload", args=args)
 
             filemeta = _FileMeta.from_data(response["filemeta"])
 

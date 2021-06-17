@@ -42,20 +42,7 @@ def acquire_call(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: s
 
     # We'll try and import the correct module and then use the "run" function within that module
     module_name = f"{service_name}.{str(submodule_name)}"
-
-    print(module_name)
-
-    try:
-        module = import_module(module_name)
-    except ModuleNotFoundError:
-        # TODO - is there a cleaner way of doing this? This was the
-        # behaviour from the old Acquire
-        # If we can't find it then try import it from admin
-        module_name = f"admin.{str(submodule_name)}"
-        module = import_module(module_name)
-    # except TypeError:
-    #     print(f"\n\n\nWe got the OpenGHG yah {module_name}\n\n\n")
-
+    module = import_module(module_name)
     fn_to_call = getattr(module, "run")
 
     try:

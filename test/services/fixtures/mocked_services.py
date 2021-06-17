@@ -210,7 +210,7 @@ def aaai_services(tmpdir_factory):
     args["canonical_url"] = "registry"
     args["service_type"] = "registry"
     args["registry_uid"] = "Z9-Z9"  # UID of testing registry
-    response = call_function("registry", function="admin/setup", args=args)
+    response = call_function("registry", function="admin.setup", args=args)
 
     registry_service = Service.from_data(response["service"])
     registry_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
@@ -222,7 +222,7 @@ def aaai_services(tmpdir_factory):
 
     args["canonical_url"] = "identity"
     args["service_type"] = "identity"
-    response = call_function("identity", function="admin/setup", args=args)
+    response = call_function("identity", function="admin.setup", args=args)
 
     identity_service = Service.from_data(response["service"])
     identity_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
@@ -235,7 +235,7 @@ def aaai_services(tmpdir_factory):
 
     args["canonical_url"] = "accounting"
     args["service_type"] = "accounting"
-    response = call_function("accounting", function="admin/setup", args=args)
+    response = call_function("accounting", function="admin.setup", args=args)
     accounting_service = Service.from_data(response["service"])
     accounting_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     accounting_user = _login_admin("accounting", "admin", password, accounting_otp)
@@ -247,7 +247,7 @@ def aaai_services(tmpdir_factory):
 
     args["canonical_url"] = "access"
     args["service_type"] = "access"
-    response = call_function("access", function="admin/setup", args=args)
+    response = call_function("access", function="admin.setup", args=args)
     responses["access"] = response
     access_service = Service.from_data(response["service"])
     access_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
@@ -260,7 +260,7 @@ def aaai_services(tmpdir_factory):
 
     args["canonical_url"] = "compute"
     args["service_type"] = "compute"
-    response = call_function("compute", function="admin/setup", args=args)
+    response = call_function("compute", function="admin.setup", args=args)
     responses["compute"] = response
     compute_service = Service.from_data(response["service"])
     compute_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
@@ -273,7 +273,7 @@ def aaai_services(tmpdir_factory):
 
     args["canonical_url"] = "storage"
     args["service_type"] = "storage"
-    response = call_function("storage", function="admin/setup", args=args)
+    response = call_function("storage", function="admin.setup", args=args)
     storage_service = Service.from_data(response["service"])
     storage_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     storage_user = _login_admin("storage", "admin", password, storage_otp)
@@ -288,14 +288,14 @@ def aaai_services(tmpdir_factory):
         "service_url": accounting_service.canonical_url(),
         "authorisation": Authorisation(user=access_user, resource=resource).to_data(),
     }
-    access_service.call_function(function="admin/trust_accounting_service", args=args)
+    access_service.call_function(function="admin.trust_accounting_service", args=args)
 
     resource = "trust_accounting_service %s" % accounting_service.uid()
     args = {
         "service_url": accounting_service.canonical_url(),
         "authorisation": Authorisation(user=compute_user, resource=resource).to_data(),
     }
-    compute_service.call_function(function="admin/trust_accounting_service", args=args)
+    compute_service.call_function(function="admin.trust_accounting_service", args=args)
 
     responses["_services"] = _services
 

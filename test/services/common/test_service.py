@@ -46,7 +46,7 @@ def test_service(service_url, aaai_services):
 
     assert(data == dec_ver)
 
-    service.call_function("admin/test")
+    service.call_function("admin.test")
 
     admin_user = aaai_services[service_url]["user"]
     auth = Authorisation(user=admin_user,
@@ -54,3 +54,16 @@ def test_service(service_url, aaai_services):
 
     service.call_function(
         function="dump_keys", args={"authorisation": auth.to_data()})
+
+
+def test_service_incorrect_function(aaai_services):
+    service_url = "storage"
+    function = "spam-and-eggs"
+
+    with pytest.raises(ModuleNotFoundError):
+        call_function(service_url=service_url, function=function)
+
+    valid_function = "upload"
+    response = call_function(service_url=service_url, function=valid_function)
+
+    assert response["Error"]
