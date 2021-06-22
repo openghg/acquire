@@ -115,13 +115,12 @@ def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
     Args:
      additional_function (function): function to be routed
      ctx: currently unused
-     data (str): to be passed as arguments to other functions
+     data: to be passed as arguments to other functions
      loop: currently unused
 
      Returns:
          dict: JSON serialisable dict
     """
-
     # Make sure we set the flag to say that this code is running
     # as part of a service
     from Acquire.Service import (
@@ -138,7 +137,7 @@ def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
     result = None
 
     try:
-        (function, args, keys) = unpack_arguments(data, get_service_private_key)
+        function, args, keys = unpack_arguments(args=data, key=get_service_private_key)
     except Exception as e:
         function = None
         args = None
@@ -147,19 +146,20 @@ def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
 
     if result is None:
         try:
-            result = _handle(ctx=ctx, function=function, additional_function=additional_function, args=args)
+            handler_result = _handle(ctx=ctx, function=function, additional_function=additional_function, args=args)
         except Exception as e:
             result = e
 
-    result = create_return_value(payload=result)
+    return_value_result = create_return_value(payload=handler_result)
 
     try:
-        result = pack_return_value(payload=result, key=keys)
+        packed_result = pack_return_value(payload=return_value_result, key=keys)
     except Exception as e:
-        result = pack_return_value(payload=create_return_value(e))
+        packed_result = pack_return_value(payload=create_return_value(e))
 
     pop_is_running_service()
-    return result
+
+    return packed_result
 
 
 def create_async_handler(additional_function=None):
