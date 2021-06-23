@@ -115,8 +115,8 @@ class MockedRequests:
 
         pop_testing_objstore()
 
-        if isinstance(result, str):
-            result = result.encode("utf-8")
+        # if isinstance(result, str):
+        #     result = result.encode("utf-8")
 
         return MockedRequests(status_code=200, content=result)
 

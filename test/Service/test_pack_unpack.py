@@ -8,7 +8,7 @@ from Acquire.Service import create_return_value
 from Acquire.ObjectStore import string_to_bytes, bytes_to_string
 
 import random
-import json
+import msgpack
 
 
 def _bar():
@@ -37,8 +37,6 @@ def test_pack_unpack_args_returnvals():
 
     (f, unpacked, keys) = unpack_arguments(args=uncrypted)
 
-    print(keys)
-
     assert(args == unpacked)
     assert(f == func)
 
@@ -46,16 +44,17 @@ def test_pack_unpack_args_returnvals():
                             key=pubkey, response_key=pubkey,
                             public_cert=pubkey)
 
-    data = json.loads(packed.decode("utf-8"))
+    # data = json.loads(packed.decode("utf-8"))
+    data = msgpack.unpackb(packed)
 
     assert(data["encrypted"])
     assert(data["fingerprint"] == privkey.fingerprint())
 
-    payload = privkey.decrypt(string_to_bytes(data["data"]))
-    payload = json.loads(payload)
+    payload = privkey.decrypt(data["data"])
+    payload = msgpack.unpackb(payload)
 
     assert(payload["sign_with_service_key"] == privkey.fingerprint())
-    assert(payload["encryption_public_key"] == bytes_to_string(pubkey.bytes()))
+    assert(payload["encryption_public_key"] == pubkey.bytes())
     assert(payload["payload"] == args)
 
     (f, unpacked, keys) = unpack_arguments(function=func, args=packed,
@@ -69,16 +68,16 @@ def test_pack_unpack_args_returnvals():
                                       payload=return_value, key=keys,
                                       private_cert=privkey)
 
-    result = json.loads(packed_result.decode("utf-8"))
+    result = msgpack.unpackb(packed_result)
 
     assert(result["fingerprint"] == privkey.fingerprint())
     assert(result["encrypted"])
-    data = string_to_bytes(result["data"])
-    sig = string_to_bytes(result["signature"])
+    data = result["data"]
+    sig = result["signature"]
 
     pubkey.verify(signature=sig, message=data)
 
-    data = json.loads(privkey.decrypt(data))
+    data = msgpack.unpackb(privkey.decrypt(data))
 
     assert(data["payload"]["return"] == message)
 
