@@ -63,7 +63,7 @@ class ChunkDownloader:
         """
         return self._downloaded_filename
 
-    def _start_download(self, filename=None, dir=None):
+    def _start_download(self, filename=None, directory=None):
         """Start the download of the file to 'filename' in 'dir'"""
         if self.is_null():
             raise PermissionError(
@@ -82,7 +82,7 @@ class ChunkDownloader:
             from Acquire.Client import create_new_file as \
                 _create_new_file
             self._downloaded_filename = _create_new_file(filename=filename,
-                                                         dir=dir)
+                                                         directory=directory)
             self._FILE = open(self._downloaded_filename, "ab")
         elif self._last_filename != filename:
             raise PermissionError(
@@ -156,12 +156,12 @@ class ChunkDownloader:
 
         return True
 
-    def download(self, filename=None, dir=None):
+    def download(self, filename=None, directory=None):
         """Download as much of the file as possible to 'filename'. You
            can call this repeatedly with the same filename (or with
            no filename set) to stream the file back as it is written
         """
-        self._start_download(filename=filename, dir=dir)
+        self._start_download(filename=filename, directory=directory)
         downloaded_filename = self._downloaded_filename
 
         got_chunk = self.download_next_chunk()

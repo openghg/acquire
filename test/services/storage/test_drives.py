@@ -6,15 +6,19 @@ import os
 from Acquire.Client import Drive, StorageCreds, ACLRules
 from Acquire.ObjectStore import OSPar
 
+# @pytest.fixture(scope="session")
+# def tempdir(tmpdir_factory):
+#     d = tmpdir_factory.mktemp("acquire")
+#     return str(d)
 
-@pytest.fixture(scope="session")
-def tempdir(tmpdir_factory):
-    d = tmpdir_factory.mktemp("")
-    return str(d)
+# @pytest.fixture(scope="session")
+# def tempdir(tmpdir_factory):
+#     d = tmpdir_factory.mktemp("acquire")
+#     return str(d)
 
 
-def test_drives(authenticated_user, tempdir):
-
+def test_drives(authenticated_user, tmpdir):
+    tempdir = tmpdir
     creds = StorageCreds(user=authenticated_user, service_url="storage")
 
     nstart = len(Drive.list_toplevel_drives(creds=creds))
@@ -25,7 +29,7 @@ def test_drives(authenticated_user, tempdir):
     assert(drive.metadata().name() == drive_name)
     assert(drive.metadata().acl().is_owner())
 
-    drive2_name = "test/this/is/a/../../dir"
+    drive2_name = "test/this/is/a/../../directory"
 
     drive2 = Drive(name=drive2_name, creds=creds)
 
@@ -86,7 +90,7 @@ def test_drives(authenticated_user, tempdir):
     assert(files[0].uploaded_when() == upload_datetime)
 
     f = files[0].open()
-    filename = f.download(dir=tempdir)
+    filename = f.download(directory=tempdir)
 
     # make sure that the two files are identical
     with open(filename, "rb") as FILE:
@@ -122,7 +126,7 @@ def test_drives(authenticated_user, tempdir):
 
     assert(len(versions) == 2)
 
-    filename = new_filemeta.open().download(dir=tempdir)
+    filename = new_filemeta.open().download(directory=tempdir)
 
     # make sure that the two files are identical
     with open(filename, "rb") as FILE:
@@ -140,7 +144,7 @@ def test_drives(authenticated_user, tempdir):
     assert(versions[0].uid() == filemeta.uid())
     assert(versions[1].uid() == new_filemeta.uid())
 
-    filename = new_filemeta.open().download(dir=tempdir, force_par=True)
+    filename = new_filemeta.open().download(directory=tempdir, force_par=True)
 
     # make sure that the two files are identical
     with open(filename, "rb") as FILE:
@@ -158,7 +162,7 @@ def test_drives(authenticated_user, tempdir):
     assert(filemeta.filename() == "test/two/test.py")
 
     # cannot create a new Drive with non-owner ACLs
-    with pytest.raises(PermissionError):
+    with pytest.raises(ValueError):
         drive = Drive(name="broken_acl", creds=creds,
                       aclrules=ACLRules.owner("12345@z0-z0"))
 

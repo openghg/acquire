@@ -6,7 +6,7 @@ from Acquire.Client import Drive, StorageCreds
 
 @pytest.fixture(scope="session")
 def tempdir(tmpdir_factory):
-    d = tmpdir_factory.mktemp("")
+    d = tmpdir_factory.mktemp(basename="acquire")
     return str(d)
 
 
@@ -31,14 +31,14 @@ def test_chunking(authenticated_user, tempdir):
 
     uploader.close()
 
-    filename = drive.download("test_chunking.py", dir=tempdir)
+    filename = drive.download("test_chunking.py", directory=tempdir)
 
     lines = open(filename).readlines()
 
     assert(lines[0] == "This is some text\n")
     assert(lines[1] == "Here is some more!\n")
 
-    downloader = drive.chunk_download("test_chunking.py", dir=tempdir)
+    downloader = drive.chunk_download("test_chunking.py", directory=tempdir)
 
     filename = downloader.local_filename()
 

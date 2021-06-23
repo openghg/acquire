@@ -1,13 +1,6 @@
-
 import pytest
 
 from Acquire.Client import PAR, Location, ACLRule, Drive, StorageCreds
-
-
-@pytest.fixture(scope="session")
-def tempdir(tmpdir_factory):
-    d = tmpdir_factory.mktemp("")
-    return str(d)
 
 
 def _same_file(file1, file2):
@@ -17,7 +10,8 @@ def _same_file(file1, file2):
     return lines1 == lines2
 
 
-def test_drive_par(authenticated_user, tempdir):
+def test_drive_par(authenticated_user, tmpdir):
+    tempdir = tmpdir
     drive_name = "test å∫ç∂ pars"
     creds = StorageCreds(user=authenticated_user, service_url="storage")
 
@@ -25,7 +19,7 @@ def test_drive_par(authenticated_user, tempdir):
 
     drive.upload(filename=__file__, uploaded_name="tmp_test.py")
 
-    downloaded_name = drive.download(filename="tmp_test.py", dir=tempdir)
+    downloaded_name = drive.download(filename="tmp_test.py", directory=tempdir)
 
     assert(_same_file(__file__, downloaded_name))
 
@@ -44,7 +38,7 @@ def test_drive_par(authenticated_user, tempdir):
     assert(len(files) == 1)
     assert(files[0].filename() == "tmp_test.py")
 
-    downloaded_name = files[0].open().download(dir=tempdir,
+    downloaded_name = files[0].open().download(directory=tempdir,
                                                force_par=True)
 
     assert(_same_file(__file__, downloaded_name))
@@ -73,7 +67,7 @@ def test_drive_par(authenticated_user, tempdir):
     assert("tmp_test.py" in files)
     assert("tmp_test2.py" in files)
 
-    downloaded_name = files["tmp_test2.py"].open().download(dir=tempdir)
+    downloaded_name = files["tmp_test2.py"].open().download(directory=tempdir)
 
     assert(_same_file(__file__, downloaded_name))
 
@@ -85,11 +79,11 @@ def test_drive_par(authenticated_user, tempdir):
 
     assert(par_file.metadata().acl() == ACLRule.reader())
 
-    downloaded_name = par_file.download(dir=tempdir)
+    downloaded_name = par_file.download(directory=tempdir)
 
     assert(_same_file(__file__, downloaded_name))
 
-    with pytest.raises(PermissionError):
+    with pytest.raises(ValueError):
         par_file.upload(__file__)
 
     par = PAR(location=files["tmp_test.py"].location(),

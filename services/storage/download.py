@@ -85,9 +85,13 @@ def run(args):
     if filemeta is not None:
         return_value["filemeta"] = filemeta.to_data()
 
+    # Here we need to be able to return binary data
+
     if filedata is not None:
         from Acquire.ObjectStore import bytes_to_string as _bytes_to_string
         return_value["filedata"] = _bytes_to_string(filedata)
+        # return_value["filedata"] = filedata
+        # return_value["binary_filedata"] = filedata
 
     if par is not None:
         return_value["download_par"] = par.to_data()
