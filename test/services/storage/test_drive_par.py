@@ -1,5 +1,4 @@
 import pytest
-import tempfile
 
 from Acquire.Client import PAR, Location, ACLRule, Drive, StorageCreds
 
@@ -17,9 +16,8 @@ def _same_file(file1, file2):
     return lines1 == lines2
 
 
-def test_drive_par(authenticated_user, tmp_path):
-    tempdir = str(tmp_path / "acquire_test")
-
+def test_drive_par(authenticated_user, tmpdir):
+    tempdir = tmpdir
     drive_name = "test å∫ç∂ pars"
     creds = StorageCreds(user=authenticated_user, service_url="storage")
 
