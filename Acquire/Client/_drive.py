@@ -171,12 +171,12 @@ class Drive:
         else:
             return self._creds.storage_service()
 
-    def chunk_upload(self, filename, dir=None, aclrules=None):
+    def chunk_upload(self, filename, directory=None, aclrules=None):
         """Start a chunked upload of a file called 'filename' (just the
            filename - not the full path - if you want to specify a certain
-           directory in the Drive then specify that in 'dir').
+           directory in the Drive then specify that in 'directory').
            The file will be uploaded to the Drive at
-           'dir/filename'. If a file with this name exists,
+           'directory/filename'. If a file with this name exists,
            then this will upload a new version (assuming you have permission).
            Otherwise this will create a new file. You can set the
            ACL rules used to grant access to this file via 'aclrules'.
@@ -189,8 +189,8 @@ class Drive:
         if self.is_null():
             raise PermissionError("Cannot upload a file to a null drive!")
 
-        if dir is not None:
-            filename = "%s/%s" % (dir, filename)
+        if directory is not None:
+            filename = "%s/%s" % (directory, filename)
 
         from Acquire.Client import FileMeta as _FileMeta
         filemeta = _FileMeta(filename=filename)
@@ -198,7 +198,7 @@ class Drive:
 
         return filemeta.open().chunk_upload(aclrules=aclrules)
 
-    def upload(self, filename, dir=None, uploaded_name=None, aclrules=None,
+    def upload(self, filename, directory=None, uploaded_name=None, aclrules=None,
                force_par=False):
         """Upload the file at 'filename' to this drive, assuming we have
            write access to this drive (or all files in the directory
@@ -206,10 +206,10 @@ class Drive:
            The local file/directory 'filename' will be uploaded to the drive
            as the file/directory called 'filename' (just the
            filename - not the full path - if you want to specify a certain
-           directory in the Drive then specify that in 'dir').
+           directory in the Drive then specify that in 'directory').
            If you want to specify the uploaded name then set this as
            "uploaded_name". The file/directory will be uploaded to the Drive at
-           'dir/uploaded_name'. If a file with this name exists,
+           'directory/uploaded_name'. If a file with this name exists,
            then this will upload a new version (assuming you have permission).
            Otherwise this will create a new file. You can set the
            ACL rules used to grant access to this file via 'aclrules'.
@@ -223,8 +223,8 @@ class Drive:
             import os as _os
             uploaded_name = _os.path.split(filename)[1]
 
-        if dir is not None:
-            uploaded_name = "%s/%s" % (dir, uploaded_name)
+        if directory is not None:
+            uploaded_name = "%s/%s" % (directory, uploaded_name)
 
         import os as _os
         if _os.path.isdir(filename):
@@ -233,7 +233,7 @@ class Drive:
             for f in _os.listdir(filename):
                 self.upload(filename="%s/%s" % (filename, f),
                             uploaded_name="%s/%s" % (uploaded_name, f),
-                            dir=None, aclrules=aclrules,
+                            directory=None, aclrules=aclrules,
                             force_par=force_par)
 
             from Acquire.Client import DirMeta as _DirMeta
@@ -250,9 +250,9 @@ class Drive:
                                           force_par=force_par,
                                           aclrules=aclrules)
 
-    def chunk_download(self, filename, dir=None, download_name=None,
+    def chunk_download(self, filename, directory=None, download_name=None,
                        version=None):
-        """Download the file 'filename' from the Drive to directory 'dir' on
+        """Download the file 'filename' from the Drive to directory 'directory' on
            this computer (or current directory if not specified), calling
            the downloaded file 'download_filename' (or 'filename' if not
            specified). Force transfer using an OSPar is force_par is True
@@ -265,11 +265,11 @@ class Drive:
         filemeta._set_drive_metadata(self._metadata, self._creds)
 
         return filemeta.open().chunk_download(filename=download_name,
-                                              version=version, dir=dir)
+                                              version=version, directory=directory)
 
-    def download(self, filename, dir=None, download_name=None,
+    def download(self, filename, directory=None, download_name=None,
                  version=None, force_par=False):
-        """Download the file 'filename' from the Drive to directory 'dir' on
+        """Download the file 'filename' from the Drive to directory 'directory' on
            this computer (or current directory if not specified), calling
            the downloaded file 'download_filename' (or 'filename' if not
            specified). Force transfer using an OSPar is force_par is True
@@ -282,7 +282,7 @@ class Drive:
         filemeta._set_drive_metadata(self._metadata, self._creds)
 
         return filemeta.open().download(filename=download_name,
-                                        version=version, dir=dir,
+                                        version=version, directory=directory,
                                         force_par=force_par)
 
     @staticmethod
@@ -350,10 +350,10 @@ class Drive:
             return Drive._list_drives(drive_uid=self._metadata.uid(),
                                       creds=self._creds)
 
-    def list_files(self, dir=None, filename=None, include_metadata=False):
+    def list_files(self, directory=None, filename=None, include_metadata=False):
         """Return a list of the FileMetas of all of the files contained
-           in this drive. If 'dir' is specified then list only the
-           files that are contained in 'dir'. If 'filename' is specified
+           in this drive. If 'directory' is specified then list only the
+           files that are contained in 'directory'. If 'filename' is specified
            then return only the files that match the passed filename
         """
         if self.is_null():
@@ -370,8 +370,8 @@ class Drive:
         args = {"drive_uid": self._metadata.uid(),
                 "include_metadata": include_metadata}
 
-        if dir is not None:
-            args["dir"] = str(dir)
+        if directory is not None:
+            args["directory"] = str(directory)
 
         if filename is not None:
             args["filename"] = str(filename)

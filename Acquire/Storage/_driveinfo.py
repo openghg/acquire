@@ -720,12 +720,12 @@ class DriveInfo:
 
     def list_files(self, authorisation=None, par=None,
                    identifiers=None, include_metadata=False,
-                   dir=None, filename=None):
+                   directory=None, filename=None):
         """Return the list of FileMeta data for the files contained
            in this Drive. The passed authorisation is needed in case
            the list contents of this drive is not public.
 
-           If 'dir' is specified, then only search for files in 'dir'.
+           If 'directory' is specified, then only search for files in 'directory'.
            If 'filename' is specified, then only search for the
            file called 'filename'
         """
@@ -736,7 +736,7 @@ class DriveInfo:
 
         if par is not None:
             if par.location().is_file():
-                dir = None
+                directory = None
                 filename = par.location().filename()
             elif not par.location().is_drive():
                 raise PermissionError(
@@ -754,18 +754,18 @@ class DriveInfo:
         metadata_bucket = self._get_metadata_bucket()
 
         if filename is not None:
-            if dir is not None:
-                filename = "%s/%s" % (dir, filename)
+            if directory is not None:
+                filename = "%s/%s" % (directory, filename)
 
             key = "%s/%s/%s" % (_fileinfo_root, self._drive_uid,
                                 _string_to_encoded(filename))
 
             names = [key]
-        elif dir is not None:
-            while dir.endswith("/"):
-                dir = dir[0:-1]
+        elif directory is not None:
+            while directory.endswith("/"):
+                directory = directory[0:-1]
 
-            encoded_dir = _string_to_encoded(dir)
+            encoded_dir = _string_to_encoded(directory)
 
             while encoded_dir.endswith("="):
                 encoded_dir = encoded_dir[0:-1]
@@ -785,12 +785,12 @@ class DriveInfo:
 
             names = []
 
-            dir = "%s/" % dir
+            directory = "%s/" % directory
 
             for name in all_names:
                 decoded_name = _encoded_to_string(name.split("/")[-1])
 
-                if decoded_name.startswith(dir):
+                if decoded_name.startswith(directory):
                     names.append(name)
         else:
             key = "%s/%s" % (_fileinfo_root, self._drive_uid)

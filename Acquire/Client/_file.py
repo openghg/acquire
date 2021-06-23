@@ -195,6 +195,9 @@ class File:
             storage_service = self._creds.storage_service()
 
             response = storage_service.call_function(function="upload", args=args)
+            
+            if "Error" in response:
+                raise ValueError(f"Error calling function: {response['Error']}")
 
             filemeta = _FileMeta.from_data(response["filemeta"])
 
@@ -213,7 +216,7 @@ class File:
             filehandle.__del__()
             raise
 
-    def chunk_download(self, filename=None, version=None, dir=None):
+    def chunk_download(self, filename=None, version=None, directory=None):
         """Return a ChunkDownloader to download this file
         chunk-by-chunk
         """
@@ -263,11 +266,11 @@ class File:
 
         downloader = _ChunkDownloader.from_data(response["downloader"], privkey=privkey, service=storage_service)
 
-        downloader._start_download(filename=filename, dir=dir)
+        downloader._start_download(filename=filename, directory=directory)
 
         return downloader
 
-    def download(self, filename=None, version=None, dir=None, force_par=False):
+    def download(self, filename=None, version=None, directory=None, force_par=False):
         """Download this file into the local directory
         the local directory, or 'dir' if specified,
         calling the file 'filename' (or whatever it is called
@@ -356,14 +359,14 @@ class File:
                 filedata = _uncompress(inputdata=filedata, compression_type=filemeta.compression_type())
 
             # write the data to the specified local file...
-            filename = _create_new_file(filename=filename, dir=dir)
+            filename = _create_new_file(filename=filename, directory=directory)
             with open(filename, "wb") as FILE:
                 FILE.write(filedata)
                 FILE.flush()
         elif "download_par" in response:
             from Acquire.ObjectStore import OSPar as _OSPar
 
-            filename = _create_new_file(filename=filename, dir=dir)
+            filename = _create_new_file(filename=filename, directory=directory)
             par = _OSPar.from_data(response["download_par"])
             par.read(privkey).get_object_as_file(filename)
             par.close(privkey)
@@ -382,7 +385,7 @@ class File:
 
             downloader = _ChunkDownloader.from_data(response["downloader"], privkey=privkey, service=storage_service)
 
-            filename = downloader.download(filename=filename, dir=dir)
+            filename = downloader.download(filename=filename, directory=directory)
 
         filemeta._copy_credentials(self._metadata)
         self._metadata = filemeta

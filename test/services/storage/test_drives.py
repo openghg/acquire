@@ -29,7 +29,7 @@ def test_drives(authenticated_user, tmpdir):
     assert(drive.metadata().name() == drive_name)
     assert(drive.metadata().acl().is_owner())
 
-    drive2_name = "test/this/is/a/../../dir"
+    drive2_name = "test/this/is/a/../../directory"
 
     drive2 = Drive(name=drive2_name, creds=creds)
 
@@ -90,7 +90,7 @@ def test_drives(authenticated_user, tmpdir):
     assert(files[0].uploaded_when() == upload_datetime)
 
     f = files[0].open()
-    filename = f.download(dir=tempdir)
+    filename = f.download(directory=tempdir)
 
     # make sure that the two files are identical
     with open(filename, "rb") as FILE:
@@ -126,7 +126,7 @@ def test_drives(authenticated_user, tmpdir):
 
     assert(len(versions) == 2)
 
-    filename = new_filemeta.open().download(dir=tempdir)
+    filename = new_filemeta.open().download(directory=tempdir)
 
     # make sure that the two files are identical
     with open(filename, "rb") as FILE:
@@ -144,7 +144,7 @@ def test_drives(authenticated_user, tmpdir):
     assert(versions[0].uid() == filemeta.uid())
     assert(versions[1].uid() == new_filemeta.uid())
 
-    filename = new_filemeta.open().download(dir=tempdir, force_par=True)
+    filename = new_filemeta.open().download(directory=tempdir, force_par=True)
 
     # make sure that the two files are identical
     with open(filename, "rb") as FILE:

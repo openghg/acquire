@@ -2,12 +2,6 @@
 import sys
 import os
 
-# # Added path for Acquire source in tests
-# sys.path.insert(0, os.path.abspath("../"))
-
-# # Added for import of services modules in tests
-# sys.path.insert(0, os.path.abspath("../services"))
-
 # Added for import of services modules in tests
 sys.path.insert(0, os.path.abspath("services"))
 

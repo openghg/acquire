@@ -60,7 +60,7 @@ def run(args):
     files = drive.list_files(authorisation=authorisation,
                              include_metadata=include_metadata,
                              par=par, identifiers=identifiers,
-                             dir=directory, filename=filename)
+                             directory=directory, filename=filename)
 
     return_value = {}
 
