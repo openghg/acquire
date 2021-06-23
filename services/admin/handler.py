@@ -146,11 +146,11 @@ def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
 
     if result is None:
         try:
-            handler_result = _handle(ctx=ctx, function=function, additional_function=additional_function, args=args)
+            result = _handle(ctx=ctx, function=function, additional_function=additional_function, args=args)
         except Exception as e:
             result = e
 
-    return_value_result = create_return_value(payload=handler_result)
+    return_value_result = create_return_value(payload=result)
 
     try:
         packed_result = pack_return_value(payload=return_value_result, key=keys)

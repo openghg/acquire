@@ -152,23 +152,25 @@ def pack_return_value(function=None, payload=None, key=None, response_key=None, 
     else:
         response = {}
 
-        result_data = key.encrypt(result)
+        # Use msgpack to pack the encrypted data
+        result_bytes = msgpack.packb(result)
+        encrypted_result = key.encrypt(result_bytes)
 
         if sign_result:
             # sign using the signing certificate for this service
             signature = _get_signing_certificate(fingerprint=sign_result, private_cert=private_cert).sign(result_data)
             response["signature"] = signature
 
-        response["data"] = result_data
+        response["data"] = encrypted_result
         response["encrypted"] = True
         response["fingerprint"] = key.fingerprint()
         response["synctime"] = now
 
-        packed = msgpack.packb(response)
+        result = response
 
-        return packed
+    packed = msgpack.packb(result)
 
-
+    return packed
 
 
 def pack_arguments(function=None, args=None, key=None, response_key=None, public_cert=None):
@@ -227,9 +229,6 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
         else:
             return (None, None, None)
 
-    # args should be a json-encoded utf-8 string
-    # Need to modify this here to accept binary data
-    # Args should be a dictionary of json and then binary data?
     try:
         # data = _json.loads(args)
         data = msgpack.unpackb(args)
@@ -288,7 +287,8 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
             )
 
         try:
-            signature = _string_to_bytes(data["signature"])
+            # signature = _string_to_bytes(data["signature"])
+            signature = data["signature"]
         except KeyError:
             signature = None
 
@@ -301,7 +301,7 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
             )
 
     if is_encrypted:
-        encrypted_data = _string_to_bytes(data["data"])
+        encrypted_data = data["data"]
 
         fingerprint = data.get("fingerprint")
 
@@ -317,6 +317,7 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
                 )
 
         decrypted_data = _get_key(key, fingerprint).decrypt(encrypted_data)
+        decrypted_data = msgpack.unpackb(decrypted_data)
 
         return unpack_arguments(args=decrypted_data, is_return_value=is_return_value, function=function, service=service)
 
@@ -473,15 +474,19 @@ def call_function(service_url, function=None, args=None, args_key=None, response
             "%d returned. Message:\n%s" % (function, service_url, response.status_code, str(response.content))
         )
 
-    if response.encoding == "utf-8" or response.encoding is None:
+    if response.encoding == "utf-8":
         result = response.content.decode("utf-8")
     else:
-        from Acquire.Service import RemoteFunctionCallError
+        result = response.content
 
-        raise RemoteFunctionCallError(
-            "Cannot call remote function '%s' as '%s'. Invalid data encoding "
-            "%s returned. Message:\n%s" % (function, service_url, response.encoding, str(response.content))
-        )
+    print(result)
+    # else:
+    #     from Acquire.Service import RemoteFunctionCallError
+
+    #     raise RemoteFunctionCallError(
+    #         "Cannot call remote function '%s' as '%s'. Invalid data encoding "
+    #         "%s returned. Message:\n%s" % (function, service_url, response.encoding, str(response.content))
+    #     )
 
     return unpack_return_value(
         return_value=result, key=response_key, public_cert=public_cert, function=function, service=service_url

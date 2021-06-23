@@ -62,7 +62,7 @@ class MockedRequests:
     each of the services
     """
 
-    def __init__(self, status_code, content, encoding="utf-8"):
+    def __init__(self, status_code, content, encoding=None):
         self.status_code = status_code
         self.content = content
         self.encoding = encoding
