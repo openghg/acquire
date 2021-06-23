@@ -6,14 +6,19 @@ import os
 from Acquire.Client import Drive, StorageCreds, ACLRules
 from Acquire.ObjectStore import OSPar
 
+# @pytest.fixture(scope="session")
+# def tempdir(tmp_path):
+#     d = tmpdir_factory.mktemp("acquire")
+#     return str(d)
 
-@pytest.fixture(scope="session")
-def tempdir(tmpdir_factory):
-    d = tmpdir_factory.mktemp("")
-    return str(d)
+# @pytest.fixture(scope="session")
+# def tempdir(tmpdir_factory):
+#     d = tmpdir_factory.mktemp("acquire")
+#     return str(d)
 
 
-def test_drives(authenticated_user, tempdir):
+def test_drives(authenticated_user, tmp_path):
+    tempdir = tmp_path / "acquire_test"
 
     creds = StorageCreds(user=authenticated_user, service_url="storage")
 

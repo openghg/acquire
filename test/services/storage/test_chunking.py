@@ -6,7 +6,7 @@ from Acquire.Client import Drive, StorageCreds
 
 @pytest.fixture(scope="session")
 def tempdir(tmpdir_factory):
-    d = tmpdir_factory.mktemp("")
+    d = tmpdir_factory.mktemp(basename="acquire")
     return str(d)
 
 
