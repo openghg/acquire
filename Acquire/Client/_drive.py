@@ -60,6 +60,9 @@ def _get_drive(creds, name=None, drive_uid=None,
 
     response = storage_service.call_function(function="open_drive", args=args)
 
+    if "Error" in response:
+        raise ValueError(f"Error calling function open_drive: {response['Error']}")
+
     from Acquire.Client import DriveMeta as _DriveMeta
 
     return _create_drive(creds=creds,

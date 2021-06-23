@@ -162,7 +162,7 @@ def test_drives(authenticated_user, tmpdir):
     assert(filemeta.filename() == "test/two/test.py")
 
     # cannot create a new Drive with non-owner ACLs
-    with pytest.raises(PermissionError):
+    with pytest.raises(ValueError):
         drive = Drive(name="broken_acl", creds=creds,
                       aclrules=ACLRules.owner("12345@z0-z0"))
 
