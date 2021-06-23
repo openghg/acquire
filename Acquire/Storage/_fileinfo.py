@@ -29,7 +29,8 @@ class VersionInfo:
                 user_guid = None
 
             if user_guid is None:
-                raise PermissionError("You must specify the user_guid of the user who is uploading this version of the file!")
+                raise PermissionError("You must specify the user_guid of the user who is " "uploading this version of the file!")
+
 
             if aclrules is None:
                 from Acquire.Identity import ACLRules as _ACLRules
