@@ -17,6 +17,7 @@ requests
 fdk
 oci
 google-cloud-storage
+msgpack
 
 # GPL 3+ license dependencies
 lazy_import
