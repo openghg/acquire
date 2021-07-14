@@ -64,7 +64,7 @@ class ChunkDownloader:
         return self._downloaded_filename
 
     def _start_download(self, filename=None, directory=None):
-        """Start the download of the file to 'filename' in 'dir'"""
+        """Start the download of the file to 'filename' in 'directory'"""
         if self.is_null():
             raise PermissionError(
                 "Cannot download a chunk using a null uploader!")

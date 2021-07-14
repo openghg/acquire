@@ -1,8 +1,6 @@
 
 from Acquire.Storage import DriveInfo, UserDrives, PARRegistry
-
 from Acquire.Client import Authorisation
-
 from Acquire.ObjectStore import list_to_string
 
 

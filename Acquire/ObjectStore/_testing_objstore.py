@@ -304,8 +304,8 @@ class Testing_ObjectStore:
                         FILE.write(data)
                     FILE.flush()
             except:
-                dir = "/".join(filename.split("/")[0:-1])
-                _os.makedirs(dir, exist_ok=True)
+                directory = "/".join(filename.split("/")[0:-1])
+                _os.makedirs(directory, exist_ok=True)
                 with open(filename, 'wb') as FILE:
                     if data is not None:
                         FILE.write(data)

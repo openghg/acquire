@@ -664,8 +664,8 @@ def _write_local(url, data):
             FILE.write(data)
             FILE.flush()
     except:
-        dir = "/".join(filename.split("/")[0:-1])
-        _os.makedirs(dir, exist_ok=True)
+        directory = "/".join(filename.split("/")[0:-1])
+        _os.makedirs(directory, exist_ok=True)
         with open(filename, 'wb') as FILE:
             FILE.write(data)
             FILE.flush()

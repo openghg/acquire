@@ -141,13 +141,13 @@ def uncompress(inputfile=None, outputfile=None,
 
 
 def create_new_file(filename, directory=None):
-    """Create a new file in directory 'dir' (default current directory)
+    """Create a new file in directory 'directory' (default current directory)
        called 'filename'. If the file already exists, then create a new
        file with name derived from 'filename'
 
         Args:
             filename (str): Name of file to create
-            dir (str, default=None): Directory in which to create file
+            directory (str, default=None): Directory in which to create file
         Returns:
             None
     """

@@ -272,7 +272,7 @@ class File:
 
     def download(self, filename=None, version=None, directory=None, force_par=False):
         """Download this file into the local directory
-        the local directory, or 'dir' if specified,
+        the local directory, or 'directory' if specified,
         calling the file 'filename' (or whatever it is called
         on the Drive if not specified). If a local
         file exists with this name, then a new, unique filename
@@ -401,7 +401,7 @@ class File:
             return []
 
         if self._creds is None:
-            raise PermissionError("Cannot list versions of this file as it has not " "been properly opened")
+            raise PermissionError("Cannot list versions of this file as it has not been properly opened")
 
         drive_uid = self._metadata.drive().uid()
 
