@@ -23,5 +23,6 @@ lazy_import
 
 # Needed for testing
 pytest 
+pytest-cov
 backports-datetime-fromisoformat
 freezegun
