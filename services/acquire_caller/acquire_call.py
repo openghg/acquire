@@ -5,7 +5,6 @@ import json
 import traceback
 from typing import Dict, Union
 from importlib import import_module
-from uuid import uuid4
 
 
 def acquire_call(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str) -> Response:
@@ -19,12 +18,6 @@ def acquire_call(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: s
         Response: Fn FDK response object containing function call data
         and data returned from function call
     """
-    # If ctx is None we have an internal call so create an
-    # internal call context for the response
-    if ctx is None:
-        uid = str(uuid4())
-        ctx = InvokeContext(app_id="internal_call", fn_id=f"internal-id-{uid}", call_id=f"call-id-{uid}")
-
     # With an internal call we'll get a dict
     if not isinstance(data, dict):
         try:
