@@ -40,7 +40,7 @@ def test_run_calc(aaai_services, authenticated_user):
     uploaded = drive.upload(_testdata())
     location = uploaded.location()
 
-    print(drive.list_files(dir="example_sim/input"))
+    print(drive.list_files(directory="example_sim/input"))
     print(location)
 
     # create a request for a job to be run using:

@@ -251,7 +251,6 @@ class OSPar:
             from Acquire.Service import get_trusted_service \
                 as _get_trusted_service
 
-            print(service_url)
             return _get_trusted_service(service_url=service_url)
         else:
             return None
@@ -665,8 +664,8 @@ def _write_local(url, data):
             FILE.write(data)
             FILE.flush()
     except:
-        dir = "/".join(filename.split("/")[0:-1])
-        _os.makedirs(dir, exist_ok=True)
+        directory = "/".join(filename.split("/")[0:-1])
+        _os.makedirs(directory, exist_ok=True)
         with open(filename, 'wb') as FILE:
             FILE.write(data)
             FILE.flush()

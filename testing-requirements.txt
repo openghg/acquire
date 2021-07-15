@@ -14,14 +14,16 @@ cryptography
 requests
 
 # Apache license dependencies
-fdk==0.0.35
+fdk
 oci
 google-cloud-storage
+msgpack
 
 # GPL 3+ license dependencies
 lazy_import
 
 # Needed for testing
 pytest 
+pytest-cov
 backports-datetime-fromisoformat
 freezegun

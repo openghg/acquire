@@ -14,6 +14,7 @@ from unittest.mock import patch, MagicMock
 MOCK_UUID = '814c82ae-9ac4-11e9-8cea-ccf696920b49'
 
 
+@pytest.mark.skip(reason="skip google for now")
 @pytest.mark.parametrize("new_gcp_bucket,location,regional", [('new_gcp_bucket', 'europe-west2', 'REGIONAL'),
                                                               (None, 'europe-west2', 'REGIONAL')])
 def test_create_bucket(new_gcp_bucket, location, regional):
@@ -46,6 +47,7 @@ def test_create_bucket(new_gcp_bucket, location, regional):
         assert new_bucket_obj.name == "test_suffix__%s" % expected_gcp_bucket
 
 
+@pytest.mark.skip(reason="skip google for now")
 @pytest.mark.parametrize("gcp_bucket, exist, create", [('exist_gcp_bucket', True, False)
                                                        ])
 def test_get_bucket(gcp_bucket, exist, create):

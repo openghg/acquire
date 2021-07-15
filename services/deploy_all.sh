@@ -1,9 +1,9 @@
 #!/bin/bash
 
 cd base_image && ./build_and_push.sh && cd -
-cd identity && fn --verbose deploy --local --all && cd -
-cd access && fn --verbose deploy --local --all && cd -
-cd accounting && fn --verbose deploy --local --all && cd -
-cd storage && fn --verbose deploy --local --all && cd -
-cd compute && fn --verbose deploy --local --all && cd -
-cd registry && fn --verbose deploy --local --all & cd -
+cd identity && bash deploy_all.sh && cd -
+cd access && bash deploy_all.sh && cd -
+cd accounting && bash deploy_all.sh && cd -
+cd storage && bash deploy_all.sh && cd -
+cd compute && bash deploy_all.sh && cd -
+cd registry && bash deploy_all.sh

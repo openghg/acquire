@@ -1,4 +1,3 @@
-
 import uuid as _uuid
 from copy import copy as _copy
 
@@ -9,9 +8,9 @@ __all__ = ["AccessService"]
 
 class AccessService(_Service):
     """This is a specialisation of Service for Access Services
-       Where Service represents a service in the system. Services
-       will either be identity services, access services,
-       storage services or accounting services
+    Where Service represents a service in the system. Services
+    will either be identity services, access services,
+    storage services or accounting services
     """
 
     def __init__(self, other=None):
@@ -20,22 +19,21 @@ class AccessService(_Service):
 
             if not self.is_access_service():
                 from Acquire.Access import AccessServiceError
-                raise AccessServiceError(
-                    "Cannot construct an AccessService from "
-                    "a service which is not an access service!")
+
+                raise AccessServiceError("Cannot construct an AccessService from a service which is not an access service!")
         else:
             _Service.__init__(self)
 
     def _call_local_function(self, function, args):
         """Internal function called to short-cut local 'remote'
-           function calls
+        function calls
 
-           Args:
-                function: function to route
-                args: arguments to be passed into function
+        Args:
+             function: function to route
+             args: arguments to be passed into function
 
-            Returns:
-                function: function object
+         Returns:
+             function: function object
         """
 
         from access.route import access_functions as _access_functions
@@ -47,13 +45,12 @@ class AccessService(_Service):
     def get_trusted_storage_service(self):
         """Return a trusted storage service
 
-            Returns:
-                :obj:`dict`: containing the first storage
-                device on the trusted service
+        Returns:
+            :obj:`dict`: containing the first storage
+            device on the trusted service
 
         """
-        from Acquire.Service import get_trusted_services \
-            as _get_trusted_services
+        from Acquire.Service import get_trusted_services as _get_trusted_services
 
         services = _get_trusted_services()
 
@@ -61,6 +58,5 @@ class AccessService(_Service):
             return services["storage"][0]
         except:
             from Acquire.Service import ServiceError
-            raise ServiceError(
-                "There is no trusted storage service known to this access "
-                "service")
+
+            raise ServiceError("There is no trusted storage service known to this access " "service")

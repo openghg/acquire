@@ -1,21 +1,21 @@
+from fdk.context import InvokeContext
+from fdk.response import Response
+from io import BytesIO
+from typing import Dict, Union
 
-def access_functions(function, args):
-    """ This function routes the passed arguments to the function
-        selected by the function parameter.
+
+def route(ctx: InvokeContext, data: Union[Dict, BytesIO]) -> Response:
+    """Route the call to a specific access function
+
+    Args:
+        ctx: Invoke context. This is passed by Fn to the function
+        data: Data passed to the function by the user
+    Returns:
+        Response: Fn FDK response object containing function call data
+        and data returned from function call
     """
+    from acquire_caller.acquire_call import acquire_call
 
-    if function == "request":
-        from access.request import run as _request
-        return _request(args)
-    elif function == "run_calculation":
-        from access.run_calculation import run as _run_calculation
-        return _run_calculation(args)
-    else:
-        from admin.handler import MissingFunctionError
-        raise MissingFunctionError()
+    service_name = "access"
 
-
-if __name__ == "__main__":
-    import fdk
-    from admin.handler import create_async_handler
-    fdk.handle(create_async_handler(access_functions))
+    return acquire_call(ctx=ctx, data=data, service_name=service_name)

@@ -12,3 +12,4 @@ tblib
 # Apache or BSD dependencies
 cryptography
 requests
+msgpack

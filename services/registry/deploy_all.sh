@@ -1,3 +1,3 @@
 #!/bin/bash
-export FN_REGISTRY=chryswoods
+fn create app registry
 fn --verbose deploy --local --all

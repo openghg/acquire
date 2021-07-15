@@ -1,21 +1,21 @@
+from fdk.context import InvokeContext
+from fdk.response import Response
+from io import BytesIO
+from typing import Dict, Union
 
 
-def registry_functions(function, args):
-    """This function routes calls to sub-functions, thereby allowing
-       a single registry function to stay hot for longer
+def route(ctx: InvokeContext, data: Union[Dict, BytesIO]) -> Response:
+    """Route the call to a specific registry function
+
+    Args:
+        ctx: Invoke context. This is passed by Fn to the function
+        data: Data passed to the function by the user
+    Returns:
+        Response: Fn FDK response object containing function call data
+        and data returned from function call
     """
-    if function == "get_service":
-        from registry.get_service import run as _get_service
-        return _get_service(args)
-    elif function == "register_service":
-        from registry.register_service import run as _register_service
-        return _register_service(args)
-    else:
-        from admin.handler import MissingFunctionError
-        raise MissingFunctionError()
+    from acquire_caller.acquire_call import acquire_call
 
+    service_name = "registry"
 
-if __name__ == "__main__":
-    import fdk
-    from admin.handler import create_async_handler
-    fdk.handle(create_async_handler(registry_functions))
+    return acquire_call(ctx=ctx, data=data, service_name=service_name)

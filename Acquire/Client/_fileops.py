@@ -30,7 +30,7 @@ def compress(inputfile=None, outputfile=None,
 
             # compress to a tmpfile and then move to outputfile later...
             import tempfile as _tempfile
-            (fd, bz2file) = _tempfile.mkstemp(dir=".")
+            (fd, bz2file) = _tempfile.mkstemp()
             _os.close(fd)
 
             try:
@@ -99,7 +99,7 @@ def uncompress(inputfile=None, outputfile=None,
 
             # compress to a tmpfile and then move to outputfile later...
             import tempfile as _tempfile
-            (fd, bz2file) = _tempfile.mkstemp(dir=".")
+            (fd, bz2file) = _tempfile.mkstemp()
             _os.close(fd)
 
             try:
@@ -140,14 +140,14 @@ def uncompress(inputfile=None, outputfile=None,
                          compression_type)
 
 
-def create_new_file(filename, dir=None):
-    """Create a new file in directory 'dir' (default current directory)
+def create_new_file(filename, directory=None):
+    """Create a new file in directory 'directory' (default current directory)
        called 'filename'. If the file already exists, then create a new
        file with name derived from 'filename'
 
         Args:
             filename (str): Name of file to create
-            dir (str, default=None): Directory in which to create file
+            directory (str, default=None): Directory in which to create file
         Returns:
             None
     """
@@ -165,8 +165,8 @@ def create_new_file(filename, dir=None):
         base = filename
         ext = None
 
-    if dir is not None:
-        filebase = _os.path.join(dir, base)
+    if directory is not None:
+        filebase = _os.path.join(directory, base)
     else:
         filebase = base
 
