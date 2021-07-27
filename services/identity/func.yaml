@@ -1,6 +1,6 @@
 schema_version: 20180708
 name: identity-root
-version: 0.0.10
+version: 0.0.12
 runtime: docker
 triggers:
 - name: root

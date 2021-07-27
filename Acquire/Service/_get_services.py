@@ -1,12 +1,48 @@
-
 from cachetools import cached as _cached
 from cachetools import LRUCache as _LRUCache
 
 _cache_local_serviceinfo = _LRUCache(maxsize=5)
 _cache_local_serviceinfos = _LRUCache(maxsize=5)
 
-__all__ = ["get_trusted_service", "get_trusted_services",
-           "clear_services_cache", "refetch_trusted_service"]
+__all__ = [
+    "get_service_host",
+    "get_trusted_service",
+    "get_trusted_services",
+    "clear_services_cache",
+    "refetch_trusted_service",
+]
+
+
+def get_service_host(service: str = None) -> str:
+    """Returns the base address of the Acquire server
+    from the ACQUIRE_HOST environment variable
+
+    Args:
+        service: If passed the service path is added to the address
+        e.g. acquire.openghg.org/t/service instead of acquire.openghg.org
+    Returns:
+        str: Hostname of acquire Fn server
+    """
+    import os
+    from urllib.parse import urlparse
+
+    hostname = os.getenv("ACQUIRE_HOST")
+
+    if hostname is None:
+        raise ValueError("No ACQUIRE_HOST environment variable set")
+
+    parsed = urlparse(hostname)
+
+    # If we have http / https at the start we just want the fn.hostname.domain
+    if parsed.scheme:
+        hostname = parsed.netloc
+    else:
+        hostname = parsed.path
+
+    if service is not None:
+        hostname = f"{hostname}/t/{service}"
+
+    return hostname.lower()
 
 
 def clear_services_cache():
@@ -20,7 +56,7 @@ def clear_services_cache():
 @_cached(_cache_local_serviceinfos)
 def get_trusted_services():
     """Return a dictionary of all trusted services indexed by
-       their type
+    their type
     """
     from Acquire.Service import is_running_service as _is_running_service
 
@@ -28,11 +64,11 @@ def get_trusted_services():
         from Acquire.Service import get_this_service as _get_this_service
         from Acquire.Service import Service as _Service
 
-        from Acquire.Service import get_service_account_bucket as \
-            _get_service_account_bucket
+        from Acquire.Service import (
+            get_service_account_bucket as _get_service_account_bucket,
+        )
         from Acquire.ObjectStore import ObjectStore as _ObjectStore
-        from Acquire.ObjectStore import url_to_encoded as \
-            _url_to_encoded
+        from Acquire.ObjectStore import url_to_encoded as _url_to_encoded
 
         # we already trust ourselves
         service = _get_this_service()
@@ -52,8 +88,7 @@ def get_trusted_services():
                 # need to update the keys in our copy of the service
                 remote_service.refresh_keys()
                 key = "%s/%s" % (uidkey, remote_service.uid())
-                _ObjectStore.set_object_from_json(bucket, key,
-                                                  remote_service.to_data())
+                _ObjectStore.set_object_from_json(bucket, key, remote_service.to_data())
 
             if remote_service.service_type() in datas:
                 datas[remote_service.service_type()].append(remote_service)
@@ -64,53 +99,58 @@ def get_trusted_services():
     else:
         # this is running on the client
         from Acquire.Client import Wallet as _Wallet
+
         wallet = _Wallet()
         return wallet.get_services()
 
 
 def refetch_trusted_service(service):
     """Refetch the trusted service 'service'. This will refetch the
-       keys for this service from the registry. This is sometimes needed
-       if we lose the chain of keys to the service (e.g. if the service
-       admin resets the service)
+    keys for this service from the registry. This is sometimes needed
+    if we lose the chain of keys to the service (e.g. if the service
+    admin resets the service)
     """
     from Acquire.Service import Service as _Service
-    from Acquire.Registry import get_trusted_registry_service \
-        as _get_trusted_registry_service
+    from Acquire.Registry import (
+        get_trusted_registry_service as _get_trusted_registry_service,
+    )
 
     s = _Service.resolve(service, fetch=False)
 
     registry = _get_trusted_registry_service(service_uid=service.uid())
     clear_services_cache()
-    service = registry.get_service(service_uid=s["service_uid"],
-                                   service_url=s["service_url"])
+    service = registry.get_service(
+        service_uid=s["service_uid"], service_url=s["service_url"]
+    )
 
     from Acquire.Service import trust_service as _trust_service
+
     _trust_service(service)
     return service
 
 
 # Cached as the remote service information will not change too often
 @_cached(_cache_local_serviceinfo)
-def get_trusted_service(service_url=None, service_uid=None,
-                        service_type=None, autofetch=True):
+def get_trusted_service(
+    service_url=None, service_uid=None, service_type=None, autofetch=True
+):
     """Return the trusted service info for the service with specified
-       service_url or service_uid"""
+    service_url or service_uid"""
     if service_url is not None:
         from Acquire.Service import Service as _Service
-        service_url = _Service.get_canonical_url(service_url,
-                                                 service_type=service_type)
+
+        service_url = _Service.get_canonical_url(service_url, service_type=service_type)
 
     from Acquire.Service import is_running_service as _is_running_service
 
     if _is_running_service():
         from Acquire.Service import get_this_service as _get_this_service
         from Acquire.Service import Service as _Service
-        from Acquire.Service import get_service_account_bucket as \
-            _get_service_account_bucket
+        from Acquire.Service import (
+            get_service_account_bucket as _get_service_account_bucket,
+        )
         from Acquire.ObjectStore import ObjectStore as _ObjectStore
-        from Acquire.ObjectStore import url_to_encoded as \
-            _url_to_encoded
+        from Acquire.ObjectStore import url_to_encoded as _url_to_encoded
 
         service = _get_this_service()
 
@@ -150,39 +190,45 @@ def get_trusted_service(service_url=None, service_uid=None,
 
                 if uidkey is not None:
                     _ObjectStore.set_object_from_json(
-                                                    bucket, uidkey,
-                                                    remote_service.to_data())
+                        bucket, uidkey, remote_service.to_data()
+                    )
 
             return remote_service
 
         if not autofetch:
             from Acquire.Service import ServiceAccountError
+
             if service_uid is not None:
                 raise ServiceAccountError(
-                    "We do not trust the service with UID '%s'" %
-                    service_uid)
+                    "We do not trust the service with UID '%s'" % service_uid
+                )
             else:
                 raise ServiceAccountError(
-                    "We do not trust the service at URL '%s'" %
-                    service_url)
+                    "We do not trust the service at URL '%s'" % service_url
+                )
 
         # we can try to fetch this data - we will ask our own
         # registry
-        from Acquire.Registry import get_trusted_registry_service \
-            as _get_trusted_registry_service
+        from Acquire.Registry import (
+            get_trusted_registry_service as _get_trusted_registry_service,
+        )
+
         registry = _get_trusted_registry_service(service_uid=service.uid())
-        service = registry.get_service(service_uid=service_uid,
-                                       service_url=service_url)
+        service = registry.get_service(service_uid=service_uid, service_url=service_url)
 
         from Acquire.Service import trust_service as _trust_service
+
         _trust_service(service)
         return service
     else:
         # this is running on the client
         from Acquire.Client import Wallet as _Wallet
+
         wallet = _Wallet()
-        service = wallet.get_service(service_uid=service_uid,
-                                     service_url=service_url,
-                                     service_type=service_type,
-                                     autofetch=autofetch)
+        service = wallet.get_service(
+            service_uid=service_uid,
+            service_url=service_url,
+            service_type=service_type,
+            autofetch=autofetch,
+        )
         return service

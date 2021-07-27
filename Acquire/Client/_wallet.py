@@ -511,7 +511,7 @@ class Wallet:
             try:
                 service.refresh_keys()
                 must_write = True
-            except:
+            except ServiceError:
                 # something went wrong refreshing keys - go back to the
                 # registry...
                 _output("Something went wrong refreshing keys...")

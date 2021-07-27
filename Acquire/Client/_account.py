@@ -1,6 +1,5 @@
 
 import datetime as _datetime
-import json as _json
 
 __all__ = ["Account", "get_accounts", "create_account",
            "deposit", "withdraw"]
@@ -13,7 +12,7 @@ def _get_accounting_url():
             str: Default accounting URL
     """
 
-    return "fn.acquire-aaai.com"
+    return "fn.openghg.org"
 
 
 def _get_accounting_service(accounting_url=None):
