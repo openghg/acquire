@@ -189,11 +189,11 @@ class Service:
            add on extra paths needed for the services. For
            example,
 
-           get_canonical_url("fn.acquire-aaai.com", service_type="identity")
+           get_canonical_url("acquire.openghg.org", service_type="identity")
 
            would return
 
-           "fn.acquire-aaai.com/identity"
+           "acquire.openghg.org/identity"
         """
         from urllib.parse import urlparse as _urlparse
 

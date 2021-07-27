@@ -4,10 +4,9 @@ __all__ = ["StorageCreds"]
 
 def _get_storage_url():
     """Function to discover and return the default storage url"""
-    from Acquire.Service import get_service_host
+    from Acquire.Service import get_service_url
 
-    hostname = get_service_host()
-    storage_url = f"{hostname}/t/storage"
+    storage_url = get_service_url(service="storage")
 
     return storage_url
     # return "http://fn.acquire-aaai.com:8080/t/storage"

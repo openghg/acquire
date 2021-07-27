@@ -5,7 +5,7 @@ _cache_local_serviceinfo = _LRUCache(maxsize=5)
 _cache_local_serviceinfos = _LRUCache(maxsize=5)
 
 __all__ = [
-    "get_service_host",
+    "get_service_url",
     "get_trusted_service",
     "get_trusted_services",
     "clear_services_cache",
@@ -13,13 +13,14 @@ __all__ = [
 ]
 
 
-def get_service_host(service: str = None) -> str:
+def get_service_url(service: str = None, https: bool = True) -> str:
     """Returns the base address of the Acquire server
     from the ACQUIRE_HOST environment variable
 
     Args:
         service: If passed the service path is added to the address
         e.g. acquire.openghg.org/t/service instead of acquire.openghg.org
+        https: Add in https at the start of the url
     Returns:
         str: Hostname of acquire Fn server
     """
@@ -31,8 +32,14 @@ def get_service_host(service: str = None) -> str:
     if hostname is None:
         raise ValueError("No ACQUIRE_HOST environment variable set")
 
-    parsed = urlparse(hostname)
+    # If we're testing Acquire here just return the service
+    if hostname == "acquire_testing":
+        if service is None:
+            raise TypeError("Must pass a service for testing")
 
+        return service
+
+    parsed = urlparse(hostname)
     # If we have http / https at the start we just want the fn.hostname.domain
     if parsed.scheme:
         hostname = parsed.netloc
@@ -42,6 +49,10 @@ def get_service_host(service: str = None) -> str:
     if service is not None:
         hostname = f"{hostname}/t/{service}"
 
+    if https:
+        hostname = f"https://{hostname}"
+
+    # Now we add http back in
     return hostname.lower()
 
 

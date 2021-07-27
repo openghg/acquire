@@ -1,3 +1,4 @@
+from Acquire.Service import get_service_url
 
 __all__ = ["get_registry_details", "update_registry_keys_and_certs"]
 
@@ -7,8 +8,10 @@ _testing_registry = {
     "public_key": None,
     "public_certificate": None}
 
+registry_url = get_service_url(service="registry", https=True)
+
 _acquire_registry = {
-    "canonical_url": "https://fn.acquire-aaai.com/t/registry",
+    "canonical_url": registry_url,
     "uid": "a0-a0",
     "public_key": None,
     "public_certificate": None}

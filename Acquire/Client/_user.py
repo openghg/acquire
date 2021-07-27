@@ -49,9 +49,9 @@ def _get_default_service():
 
     if _default_service is None:
         from Acquire.Service import Service as _Service
-        from Acquire.Service import get_service_host
+        from Acquire.Service import get_service_url
 
-        identity_url = get_service_host(service="identity")
+        identity_url = get_service_url(service="identity")
         _default_service = _Service.resolve(identity_url, fetch=True)["service"]
 
     return _default_service
