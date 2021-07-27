@@ -4,9 +4,9 @@ __all__ = ["StorageCreds"]
 
 def _get_storage_url():
     """Function to discover and return the default storage url"""
-    from Acquire.Service import get_service_host
+    from Acquire.Service import get_service_url
 
-    hostname = get_service_host()
+    hostname = get_service_url()
     storage_url = f"{hostname}/t/storage"
 
     return storage_url

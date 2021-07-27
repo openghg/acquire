@@ -1,23 +1,23 @@
 import os
 from unittest import mock
-from Acquire.Service import get_service_host
+from Acquire.Service import get_service_url
 
 
 @mock.patch.dict(os.environ, {"ACQUIRE_HOST": "acquire.example.org"})
-def test_get_service_host():
-    url = get_service_host()
+def test_get_service_url():
+    url = get_service_url()
     assert url == "acquire.example.org"
 
-    identity_url = get_service_host(service="identity")
+    identity_url = get_service_url(service="identity")
 
     assert identity_url == "acquire.example.org/t/identity"
 
 
 @mock.patch.dict(os.environ, {"ACQUIRE_HOST": "https://acquire.example.org"})
-def test_get_service_host_with_https():
-    url = get_service_host()
+def test_get_service_url_with_https():
+    url = get_service_url()
     assert url == "acquire.example.org"
 
-    identity_url = get_service_host(service="identity")
+    identity_url = get_service_url(service="identity")
 
     assert identity_url == "acquire.example.org/t/identity"

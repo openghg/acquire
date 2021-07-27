@@ -19,11 +19,16 @@ def register_service(service, registry_uid):
     if service.service_type() == "registry":
         from Acquire.Registry import get_registry_details \
             as _get_registry_details
+        from Acquire.Service import get_service_url
 
         details = _get_registry_details(registry_uid=registry_uid)
 
         from Acquire.Service import Service as _Service
         canonical_url = _Service.get_canonical_url(details["canonical_url"])
+
+        print("\n\nCanonical url: ", canonical_url, "\n\n")
+
+        
 
         # make sure that everything matches what was specified
         if canonical_url != service.canonical_url():
