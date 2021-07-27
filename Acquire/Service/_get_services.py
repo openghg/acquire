@@ -32,17 +32,19 @@ def get_service_url(service: str = None, https: bool = True) -> str:
     if hostname is None:
         raise ValueError("No ACQUIRE_HOST environment variable set")
 
-    parsed = urlparse(hostname)
+    # If we're testing Acquire here just return the service
+    if hostname == "acquire_testing":
+        if service is None:
+            raise TypeError("Must pass a service for testing")
 
+        return service
+
+    parsed = urlparse(hostname)
     # If we have http / https at the start we just want the fn.hostname.domain
     if parsed.scheme:
         hostname = parsed.netloc
     else:
         hostname = parsed.path
-
-    # For testing services
-    if "." not in hostname:
-        return hostname
 
     if service is not None:
         hostname = f"{hostname}/t/{service}"
@@ -147,6 +149,7 @@ def get_trusted_service(
     service_url or service_uid"""
     if service_url is not None:
         from Acquire.Service import Service as _Service
+        from Acquire.Service import get_service_url
 
         service_url = _Service.get_canonical_url(service_url, service_type=service_type)
 
