@@ -53,7 +53,7 @@ def get_registry_details(registry_uid):
     """
     try:
         registry = _registries[registry_uid]
-    except:
+    except KeyError:
         registry = _registries["a0-a0"]
 
     if registry["public_key"] is None:

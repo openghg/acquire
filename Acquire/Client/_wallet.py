@@ -479,8 +479,10 @@ class Wallet:
                     break
         else:
             from Acquire.Service import Service as _Service
+            from Acquire.Service import get_service_url
             service_url = _Service.get_canonical_url(service_url,
                                                      service_type=service_type)
+            service_url = get_service_url(service=service_type, https=True)
 
             service_files = _glob.glob("%s/*/service_%s.json" % (
                                        self._wallet_dir,
