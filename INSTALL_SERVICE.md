@@ -242,7 +242,7 @@ And allow the HTTP daemon network access
 $ setsebool -P httpd_can_network_connect 1
 ```
 
-## Step 5 - Clone Acquire
+## Step 5 - Clone Acquire
 
 Once you have tested that Fn is accessible, then you can next install Acquire.
 
@@ -277,10 +277,11 @@ In the `credentials` folder create a file called `tenancy.json` and fill in the 
 
 ## Step 8 - Setup the Fn functions
 
-Run `setup_services.py` and ...
+To setup the Fn functions we'll use the `setup_functions.py` file in the `credentials` folder.
 
-Press enter after each step...
-
+```
+$ python setup_functions.py
+```
 
 ### Set the hostname for the Acquire server
 
@@ -292,118 +293,69 @@ the hostname as this will be done for you.
 Please enter the the hostname: acquire.openghg.org
 ```
 
-## Step 8 - Create service secrets
+### Enter the user OCID
 
-Generate the encryption keys for each service using the `generate_keys.py` script in the `credentials` folder.
-
-```
-$ python generate_keys.py
-```
-
-This will generate a public/private keypair for each of the services listed in `services.json` and give each key a passphrase generated using `secrets.token_urlsafe`.
-
-Make a note of the passphrases that are printed to screen. These will be required when we pass this secret data to the functions themselves.
-
-## Step 8 - Upload keys to Oracle Cloud Interface
-
-We will now upload each public key to its respective OCI user. To make the process easier a helper script `show_keys.py` will show the contents
-of the public key for each service on screen. The script will run through the services in alphabetical order.
+You will then be asked for the OCID of the user for each service that you created in step 6.
 
 ```
-$ python show_keys.py
+We are now setting up the *** access *** service
 
-This will show the contents of the public key for each service for upload to the Oracle Cloud interface
+Enter the user OCID:
+```
 
+### Key creation
 
+The script now creates an RSA keypair in the service folder. The private key will be given a passphrase that is stored by the script and later passed into Fn. We will take the public key and upload it to the Oracle Cloud Interface.
 
---------------------------
-Key for: access
---------------------------
+### Uploading the public key
 
+Next, the script will print an RSA public key for you to paste into the `API Keys` section for the user. To upload the key go to the Oracle Cloud interface and go to `Identity` -> `Users`. There should be a user for each service (created in step 6). Click on the username and then go to `API Keys` in the `Resources` menu then `Add API Key` -> `Paste Public Key` and paste the contents of the key shown. Only copy the key itself, an example is shown below.
 
+```
 -----BEGIN PUBLIC KEY-----
-MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA4C6ttyhAgVvlVtUVnQwB
-24Bv3JvvhN2WX1y6LC+dl5UKlKXaO6UqJ5XU3u5wSXIFM+CbhhV6V/IL6EpNfiyb
-1bEBzYbZJF7fwn6mqdZo2POozlS0qNN98ilyT+3Fni6YXMlOgPn4Cu8q/mm1Hxjt
-+fP8mCOk0ubyELL7Ygp/Hlc8OhS87wmeLNdSVdPZ5O+hhi6QTxAyzP2JrlGVLSHg
-q5ONCFIxLoQdp53Ot/NIzCYS8zGoBGnzDwGBCNkvmUrZX6wySoqORGbBaIjCfkaf
-Sms5jj7cKZUrjPVQz0+6mR000EO1r9r1tqAK/OFVzvebPWI5wtCL9RqF7hC6qQT+
-aVmjxT7dqJwb2jUKDn+j3uVqpJAnvWrwRr0VppHQXGc33Ypxceq2zBLwFUPO5dE2
-WBV/CZ88BufNyv/mgXv7PMuwCF9sc7E8E9kYjrtwyvl3gO3QYnlLjzPyhEwDa6Zk
-XN83hz8zrP4MNaWsWQ4TC2YfBWTfaU4gkdyxljB9mock7mXwQaYBLd+k9S5R1VB
-2hH4Bu/icbczhbXCwUZcqDxaZxfMpN9wxYmXoES7mockdxKtZEULV644pxnczcCF
-t6ISv8ccU7WL9iO611Dv/wvK5KONOZZkzibFgYpPmockqtDQ9RA+7jK3ni487AIF
-1dMNfNJIAP66wXMRrWkPTR0CAwEAAQ==
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqvD9zH89Ka+aHXKBpVoA
+976c1yJ909dNbN9klu8kt2hVk7amUNA3O9CcJIC6F/gV9x7WFYDU1dVn/u31D1VZ
+LZmfhCBp9xgMhpU5k8nhfJ7hl9Ix14CKNhEshhkn44Fw7/dmFIsCbJMiyaMoC0cG
+Q7wyRBV/Y0ugqxJnbE7gHn6Y+8N4wPs5hJarLkPCs2v/ATgI5DeLUaeSBxjr1V/Z
+Tb2fwPdUdXVuywdiMt46DqkrrXPrnxAVfm+kZOZetONE/wSBZpjYB/nndBt85auU
+HR8GcPwxmRNNzjwAdnQ19kTd0X8QZx23hIQl3rnaHQfN90/RugGdEDYcOiM7Wxpc
+ua842Y8+WBsMtDKiae8/X9zktwqMQDQaYh8g0O/JvWD7eS/RLi01+6HDSB2zksM2
+PUoDdV2pPuqztaqIFV9/NR5RpffRoZm2eN1V9oIYkWBGo+HqZAtF6NogNhLxeUgq
+6StGsrxnzBEK61LB8GTBfsXSVfIiwvFOGO5tNWA2YiMVZW0oz2WjCmjsuiR6/TvU
+oF5Bh1vC7dvsMcDgUKeB2ABgPslXbbA+f1Lvrmv8fghGiIZaCGlE7S/+3eAqO/VL
+EmZ/SchUv7l764Uuo4UvD10gXw0Clmc1xxvr677Rh+Dl0G+Wgcv9SpAWzj9gkm8q
+BBKvzytyClH0yWWhQm2hYskCAwEAAQ==
 -----END PUBLIC KEY-----
-
-
-
-Press any key for the next service...
 ```
 
-To upload the key go to the Oracle Cloud interface and go to `Identity` -> `Users`. There should be a user for each service (created in step 6). Click on the username and then go to `API Keys` in the `Resources` menu then `Add API Key` -> `Paste Public Key` and paste the contents of the key shown
-by the script. Repeat this process for each service.
+Then press enter to move onto the next step.
 
-### Generate `secret_key` files
+### Confirm the fingerprint
 
-Now we will generate a `secret_key` file for each service. Each `secret_key` is a file with a 32-byte hexadecimal
-token written to it.
+The OCI will then give us the fingeprint of the key, this will be in the format `b0:d4:b8:58:97:ff:d9:a6:db:63:00:a5:54:89:e3:94` but yours will differ from the one shown here. Copy the fingerprint given by OCI and paste it in for checking by the script.
 
-```
-$ python generate_secret_keys.py
-```
+### Passing data to Fn
 
-### Pass secrets to Fn apps
+After you've confirmed the fingerprint the script will create a file called `secret_key` in the service directory which will be used to encrypt
+the data that is passed to Fn.
 
-With Acquire, each function resides in its own app (as Fn calls them). We now need to pass the secrets we've generated 
-to each Fn app.
+> **_NOTE:_** The `secret_key` files and private keys (`<service_name>.pem`) files should never leave the server on which they are located.
 
-```
-python credentials_to_fn.py
-```
+You should see a lot printed to the screen, showing that an encrypted config has been added for the service.
 
-This will prompt the user to input each piece of data required 
+You are now ready to repeat the process for the next service.
 
+## Step 9 - Deploy the services
 
-
-where `{name}` is the name of the key (e.g. `acquire_identity`) and
-`{passphrase}` is the passphrase you will use to protect this key.
-Make a note of the passphrase as you will need it later.
-
-This will create a public and private key used to log into the service.
-
-Log onto the OCI console and upload the public key to the user account
-on OCI that you have specified for this service. Make a record
-of the fingerprint that OCI will report.
-
-Next, create a Fn app for the service, e.g.
+Next, you need to deploy the services. Do this changing to the `services` folder and running
 
 ```
-# fn create app identity
+$ bash ./deploy_all.sh
 ```
 
-Next use `generate_secret_keys.py` to create a `secret_key` file for each of the services.
-That script will print the generated passphrases to screen, make a note of these for the next
-step.
+You should see quite a lot printed to screen as the Docker images are build and deployed.
 
-Then, run `credentials_to_fn.py` and enter the requested information at each stage, this will include
-the OCIDs of the OCI user, compartment, bucket and key fingerprint that will be used to
-store data for this service.
+## Step 10 - Check the setup
 
-You should see a lot printed to the screen, showing that an encrypted config
-has been added for the service.
-
-Next, you need to deploy the service. Do this by typing
-
-```
-# cd ..
-# cd ../base_image
-# ./build_and_push.sh
-# cd -
-# fn deploy . --local
-```
-
-Check that the service is working by navigating to
-`http://{SERVER_IP}:8080/t/{SERVICE_NAME}`
-
+Check that the service is working by navigating to `http://{SERVER_IP}:8080/t/{SERVICE_NAME}` 
 (or, by calling `fn invoke {SERVICE} {SERVICE}-root`)
