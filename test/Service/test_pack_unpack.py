@@ -1,4 +1,3 @@
-
 import pytest
 
 from Acquire.Crypto import PrivateKey, get_private_key
@@ -23,9 +22,11 @@ def test_pack_unpack_args_returnvals():
     privkey = get_private_key("testing")
     pubkey = privkey.public_key()
 
-    args = {"message": "Hello, this is a message",
-            "status": 0,
-            "long": [random.random() for _ in range(2)]}
+    args = {
+        "message": "Hello, this is a message",
+        "status": 0,
+        "long": [random.random() for _ in range(2)],
+    }
 
     func = "test_function"
 
@@ -37,41 +38,40 @@ def test_pack_unpack_args_returnvals():
 
     (f, unpacked, keys) = unpack_arguments(args=uncrypted)
 
-    assert(args == unpacked)
-    assert(f == func)
+    assert args == unpacked
+    assert f == func
 
-    packed = pack_arguments(function=func, args=args,
-                            key=pubkey, response_key=pubkey,
-                            public_cert=pubkey)
+    packed = pack_arguments(
+        function=func, args=args, key=pubkey, response_key=pubkey, public_cert=pubkey
+    )
 
     # data = json.loads(packed.decode("utf-8"))
     data = msgpack.unpackb(packed)
 
-    assert(data["encrypted"])
-    assert(data["fingerprint"] == privkey.fingerprint())
+    assert data["encrypted"]
+    assert data["fingerprint"] == privkey.fingerprint()
 
     payload = privkey.decrypt(data["data"])
     payload = msgpack.unpackb(payload)
 
-    assert(payload["sign_with_service_key"] == privkey.fingerprint())
-    assert(payload["encryption_public_key"] == pubkey.bytes())
-    assert(payload["payload"] == args)
+    assert payload["sign_with_service_key"] == privkey.fingerprint()
+    assert payload["encryption_public_key"] == pubkey.bytes()
+    assert payload["payload"] == args
 
-    (f, unpacked, keys) = unpack_arguments(function=func, args=packed,
-                                           key=privkey)
+    (f, unpacked, keys) = unpack_arguments(function=func, args=packed, key=privkey)
 
     message = {"message": "OK"}
 
     return_value = create_return_value(message)
 
-    packed_result = pack_return_value(function=func,
-                                      payload=return_value, key=keys,
-                                      private_cert=privkey)
+    packed_result = pack_return_value(
+        function=func, payload=return_value, key=keys, private_cert=privkey
+    )
 
     result = msgpack.unpackb(packed_result)
 
-    assert(result["fingerprint"] == privkey.fingerprint())
-    assert(result["encrypted"])
+    assert result["fingerprint"] == privkey.fingerprint()
+    assert result["encrypted"]
     data = result["data"]
     sig = result["signature"]
 
@@ -79,22 +79,24 @@ def test_pack_unpack_args_returnvals():
 
     data = msgpack.unpackb(privkey.decrypt(data))
 
-    assert(data["payload"]["return"] == message)
+    assert data["payload"]["return"] == message
 
-    result = unpack_return_value(return_value=packed_result,
-                                 key=privkey, public_cert=pubkey)
+    result = unpack_return_value(
+        return_value=packed_result, key=privkey, public_cert=pubkey
+    )
 
-    assert(result == message)
+    assert result == message
 
     try:
         return_value = create_return_value(_foo())
     except Exception as e:
         return_value = create_return_value(e)
 
-    packed_result = pack_return_value(function=func,
-                                      payload=return_value, key=keys,
-                                      private_cert=privkey)
+    packed_result = pack_return_value(
+        function=func, payload=return_value, key=keys, private_cert=privkey
+    )
 
     with pytest.raises(PermissionError):
-        result = unpack_return_value(function=func, return_value=packed_result,
-                                     key=privkey, public_cert=pubkey)
+        result = unpack_return_value(
+            function=func, return_value=packed_result, key=privkey, public_cert=pubkey
+        )
