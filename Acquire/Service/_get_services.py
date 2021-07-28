@@ -35,8 +35,9 @@ def get_service_url(service: str = None, https: bool = False) -> str:
     # Strip any quotation marks from the string
     hostname = hostname.replace("'", "").replace('"', '')
 
+    local_hosts = ("localhost", "127.0.0.1")
     # Handle localhost - this can be used for testing
-    if "localhost" or "127.0.0.1" in hostname:
+    if any(loc in hostname for loc in local_hosts):
         parsed_hostname = hostname
     else:
         parsed = urlparse(hostname)
@@ -45,13 +46,6 @@ def get_service_url(service: str = None, https: bool = False) -> str:
             parsed_hostname = parsed.netloc
         else:
             parsed_hostname = parsed.path
-
-    # # If we're testing Acquire here just return the service
-    # if hostname == "acquire_testing":
-    #     if service is None:
-    #         raise TypeError("Must pass a service for testing")
-
-    #     return service
 
     if service is not None:
         parsed_hostname = f"{parsed_hostname}/t/{service}"
