@@ -33,3 +33,18 @@ def test_get_service_url_with_https():
 
     assert identity_url == "https://acquire.example.org/t/identity"
 
+
+@mock.patch.dict(os.environ, {"ACQUIRE_HOST": "'localhost:8080'"})
+def test_get_service_url_with_localhost_port():
+    url = get_service_url()
+
+    assert url == "localhost:8080"
+
+    url = get_service_url(service="registry")
+
+    assert url == "localhost:8080/t/registry"
+
+    url = get_service_url(service="registry", https=True)
+
+    assert url == "https://localhost:8080/t/registry"
+

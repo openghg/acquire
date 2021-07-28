@@ -13,7 +13,7 @@ __all__ = [
 ]
 
 
-def get_service_url(service: str = None, https: bool = True) -> str:
+def get_service_url(service: str = None, https: bool = False) -> str:
     """Returns the base address of the Acquire server
     from the ACQUIRE_HOST environment variable
 
@@ -32,28 +32,36 @@ def get_service_url(service: str = None, https: bool = True) -> str:
     if hostname is None:
         raise ValueError("No ACQUIRE_HOST environment variable set")
 
-    # If we're testing Acquire here just return the service
-    if hostname == "acquire_testing":
-        if service is None:
-            raise TypeError("Must pass a service for testing")
+    # Strip any quotation marks from the string
+    hostname = hostname.replace("'", "").replace('"', '')
 
-        return service
-
-    parsed = urlparse(hostname)
-    # If we have http / https at the start we just want the fn.hostname.domain
-    if parsed.scheme:
-        hostname = parsed.netloc
+    # Handle localhost - this can be used for testing
+    if "localhost" or "127.0.0.1" in hostname:
+        parsed_hostname = hostname
     else:
-        hostname = parsed.path
+        parsed = urlparse(hostname)
+        # If we have http / https at the start we just want the fn.hostname.domain
+        if parsed.scheme:
+            parsed_hostname = parsed.netloc
+        else:
+            parsed_hostname = parsed.path
+
+    # # If we're testing Acquire here just return the service
+    # if hostname == "acquire_testing":
+    #     if service is None:
+    #         raise TypeError("Must pass a service for testing")
+
+    #     return service
 
     if service is not None:
-        hostname = f"{hostname}/t/{service}"
+        parsed_hostname = f"{parsed_hostname}/t/{service}"
 
     if https:
-        hostname = f"https://{hostname}"
+        parsed_hostname = f"https://{parsed_hostname}"
+    else:
+        parsed_hostname = f"http://{parsed_hostname}"
 
-    # Now we add http back in
-    return hostname.lower()
+    return parsed_hostname.lower()
 
 
 def clear_services_cache():

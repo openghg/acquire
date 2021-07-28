@@ -17,7 +17,7 @@ except Exception as e:
 if service is None:
     from Acquire.Service import Service as _Service
     response_key = PrivateKey()
-    registry_url = get_service_url(service="registry", https=True)
+    registry_url = get_service_url(service="registry", https=False)
     # registry_url = "http://fn.acquire-aaai.com:8080/t/registry"
     data = call_function(registry_url, response_key=response_key)
     service = _Service.from_data(data["service_info"])

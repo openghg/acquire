@@ -8,7 +8,7 @@ _testing_registry = {
     "public_key": None,
     "public_certificate": None}
 
-registry_url = get_service_url(service="registry", https=True)
+registry_url = get_service_url(service="registry", https=False)
 
 _acquire_registry = {
     "canonical_url": registry_url,
