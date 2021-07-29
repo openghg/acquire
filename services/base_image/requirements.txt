@@ -12,13 +12,4 @@ tblib
 # Apache or BSD dependencies
 cryptography
 requests
-# Apache license dependencies
-fdk
-oci
-# google-cloud-storage
-# uvloop
-
-# GPL 3+ license dependencies
-lazy_import
-
-
+msgpack

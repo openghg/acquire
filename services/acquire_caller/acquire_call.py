@@ -5,6 +5,7 @@ import json
 import traceback
 from typing import Dict, Union
 from importlib import import_module
+import msgpack
 
 
 def acquire_call(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str) -> Response:
@@ -21,13 +22,14 @@ def acquire_call(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: s
     # With an internal call we'll get a dict
     if not isinstance(data, dict):
         try:
-            data = json.loads(data)
+            data = msgpack.unpackb(data.read())
+            # data = json.loads(data)
         except Exception:
             try:
                 data = json.loads(data.getvalue())
             except Exception:
                 tb = traceback.format_exc()
-                return {"Error": str(tb), "data": data}
+                return {"Error": str(tb), "data": data.read()}
                 # return Response(ctx=ctx, response_data=)
 
     submodule_name = data["function"]

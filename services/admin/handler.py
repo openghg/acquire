@@ -1,9 +1,11 @@
 import asyncio
 import fdk
+from fdk.context import InvokeContext
 import json
 import sys
 import os
 import subprocess
+from typing import Dict, Union
 
 __all__ = ["create_handler", "create_async_handler", "MissingFunctionError"]
 
@@ -26,7 +28,11 @@ def _one_hot_spare():
 
     """
     devnull = open(os.devnull, "w")
-    subprocess.Popen(["nohup", sys.executable, "one_hot_spare.py"], stdout=devnull, stderr=subprocess.STDOUT)
+    subprocess.Popen(
+        ["nohup", sys.executable, "one_hot_spare.py"],
+        stdout=devnull,
+        stderr=subprocess.STDOUT,
+    )
 
 
 def _route_function(ctx, function, args, additional_function=None):
@@ -69,7 +75,9 @@ def _route_function(ctx, function, args, additional_function=None):
         data = {"function": function, "args": args}
         return additional_function(ctx=ctx, data=data)
     else:
-        raise MissingFunctionError(f"Unable to match call to {function} to known functions")
+        raise MissingFunctionError(
+            f"Unable to match call to {function} to known functions"
+        )
 
 
 def _handle(ctx=None, function=None, additional_function=None, args=None):
@@ -97,14 +105,39 @@ def _handle(ctx=None, function=None, additional_function=None, args=None):
     # if function != "warm":
     #     one_hot_spare()
 
-    result = _route_function(ctx=ctx, function=function, args=args, additional_function=additional_function)
+    result = _route_function(
+        ctx=ctx, function=function, args=args, additional_function=additional_function
+    )
 
     end_profile(pr, result)
 
     return result
 
 
-def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
+def handle_function_call(ctx: InvokeContext, data: Union[bytes, Dict]):
+    """Handle a function call"""
+    from Acquire.Service import (
+        push_is_running_service,
+        pop_is_running_service,
+        unpack_arguments,
+        get_service_private_key,
+        pack_return_value,
+        create_return_value,
+    )
+
+    push_is_running_service()
+
+    function, args, keys = unpack_arguments(args=data, key=get_service_private_key)
+
+    pass
+
+
+def handle_function_return(data: Union[bytes, Dict]):
+    """Handles the data returned from a function call"""
+    pass
+
+
+def _base_handler(additional_function=None, ctx=None, data=None):
     """This function routes calls to sub-functions, thereby allowing
     a single function to stay hot for longer. If you want
     to add additional functions then add them via the
@@ -114,9 +147,8 @@ def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
 
     Args:
      additional_function (function): function to be routed
-     ctx: currently unused
+     ctx: Invocation context passed to function if it's being called
      data: to be passed as arguments to other functions
-     loop: currently unused
 
      Returns:
          dict: JSON serialisable dict
@@ -134,6 +166,11 @@ def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
 
     push_is_running_service()
 
+    # So this unpacks the encrypted arguments sent by call_function
+    # Then it calls the function, here _handle is the function that controls the
+    # routing to the functions within each service
+    #
+
     result = None
 
     try:
@@ -146,16 +183,22 @@ def _base_handler(additional_function=None, ctx=None, data=None, loop=None):
 
     if result is None:
         try:
-            result = _handle(ctx=ctx, function=function, additional_function=additional_function, args=args)
+            result = _handle(
+                ctx=ctx,
+                function=function,
+                additional_function=additional_function,
+                args=args,
+            )
         except Exception as e:
             result = e
 
+    # Create a return value
     return_value_result = create_return_value(payload=result)
 
     try:
         packed_result = pack_return_value(payload=return_value_result, key=keys)
     except Exception as e:
-        packed_result = pack_return_value(payload=create_return_value(e))
+        packed_result = pack_return_value(payload=create_return_value(payload=e))
 
     pop_is_running_service()
 
@@ -175,8 +218,10 @@ def create_async_handler(additional_function=None):
 
     """
 
-    async def async_handler(ctx, data=None, loop=None):
-        return _base_handler(additional_function=additional_function, ctx=ctx, data=data, loop=loop)
+    async def async_handler(ctx, data=None):
+        return _base_handler(
+            additional_function=additional_function, ctx=ctx, data=data
+        )
 
     return async_handler
 
@@ -191,7 +236,7 @@ def create_handler(additional_function=None):
         function: Handler function
     """
 
-    def handler(ctx=None, data=None, loop=None):
+    def handler(ctx=None, data=None):
         """Handles routing to sub-functions
 
         Args:
@@ -201,6 +246,8 @@ def create_handler(additional_function=None):
          Returns:
              function: A handler function
         """
-        return _base_handler(additional_function=additional_function, ctx=ctx, data=data, loop=loop)
+        return _base_handler(
+            additional_function=additional_function, ctx=ctx, data=data
+        )
 
     return handler

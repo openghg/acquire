@@ -13,12 +13,12 @@ WORKDIR /function
 #     libcurl4-gnutls-dev && \
 #     apt-get clean
 
-ADD requirements.txt .
+ADD server-requirements.txt .
 
 # Fixing pip version here as the last version before the new resolver was introduced
 RUN pip3 install -U pip==20.2.4 setuptools wheel
-RUN pip3 install --target /python/ --no-cache --no-cache-dir -r requirements.txt
-RUN rm -rf requirements.txt
+RUN pip3 install --target /python/ --no-cache --no-cache-dir -r server-requirements.txt
+RUN rm -rf server-requirements.txt
 
 # Now transfer what is needed to the production container
 FROM fnproject/python:3.8.5
