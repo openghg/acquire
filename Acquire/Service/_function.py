@@ -315,7 +315,7 @@ def unpack_arguments(
                         % (function, service, payload["status"], payload)
                     )
 
-    is_encrypted = data.get("encrypted")
+    is_encrypted = data.get("encrypted", False)
 
     if public_cert is not None:
         if not is_encrypted:
@@ -359,7 +359,7 @@ def unpack_arguments(
                     "know! %s" % (function, service, str(e))
                 )
 
-        decrypted_data = _get_key(key, fingerprint).decrypt(encrypted_data)
+        decrypted_data = _get_key(key=key, fingerprint=fingerprint).decrypt(encrypted_data)
 
         return unpack_arguments(
             args=decrypted_data,
@@ -375,6 +375,7 @@ def unpack_arguments(
             "We should have been able to extract the payload from " "%s" % data
         )
 
+    # If this is a return value we just want to return the payload
     if is_return_value:
         try:
             return payload["return"]
@@ -382,7 +383,7 @@ def unpack_arguments(
             # no return value from this function
             return None
     else:
-        function = data.get("function")  
+        function = data.get("function")
 
         return (function, payload, data)
 

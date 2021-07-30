@@ -1,11 +1,8 @@
-import asyncio
-import fdk
 from fdk.context import InvokeContext
-import json
 import sys
 import os
 import subprocess
-from typing import Dict, Union
+from typing import Callable, Dict, Union
 
 __all__ = ["create_handler", "create_async_handler", "MissingFunctionError"]
 
@@ -35,7 +32,9 @@ def _one_hot_spare():
     )
 
 
-def _route_function(ctx, function, args, additional_function=None):
+def _route_function(
+    ctx: InvokeContext, function: str, args: Dict, additional_function: Callable = None
+):
     """Internal function that correctly routes the named function
     to the actual code to run (passing in 'args' as arguments).
     If 'additional_function' is supplied then this will also
@@ -43,13 +42,13 @@ def _route_function(ctx, function, args, additional_function=None):
     match
 
     Args:
-     function (str): select the function to call
+     function: Function to call
      args: arguments to be passed to the function
      additional_function (function, optional): another function used to
      process the function and arguments
 
      Returns:
-         function : selected function
+        function : selected function
     """
     from importlib import import_module
 
@@ -80,7 +79,12 @@ def _route_function(ctx, function, args, additional_function=None):
         )
 
 
-def _handle(ctx=None, function=None, additional_function=None, args=None):
+def _handle(
+    ctx: InvokeContext = None,
+    function: str = None,
+    additional_function: Callable = None,
+    args: Dict = None,
+):
     """This function routes calls to sub-functions, thereby allowing
        a single identity function to stay hot for longer. If you want
        to add additional functions then add them via the
@@ -166,7 +170,7 @@ def _base_handler(additional_function=None, ctx=None, data=None):
 
     push_is_running_service()
 
-    # So this unpacks the encrypted arguments sent by call_function
+    # So this function unpacks the encrypted arguments sent by call_function
     # Then it calls the function, here _handle is the function that controls the
     # routing to the functions within each service
     #
@@ -191,6 +195,8 @@ def _base_handler(additional_function=None, ctx=None, data=None):
             )
         except Exception as e:
             result = e
+
+    print(result)
 
     # Create a return value
     return_value_result = create_return_value(payload=result)

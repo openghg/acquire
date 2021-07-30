@@ -8,7 +8,9 @@ from importlib import import_module
 import msgpack
 
 
-def acquire_call(ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str) -> Response:
+def acquire_call(
+    ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str
+) -> Response:
     """Template to used to call a specific service function. This function is
         only called from the route functions of each respective function.
 
