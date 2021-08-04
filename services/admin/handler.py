@@ -49,10 +49,6 @@ async def create_return_error(error: Type[Exception]) -> Dict:
     return pack_return_value(payload=error_return)
 
 
-def _base_handler(data: Union[bytes, Dict] = None, routing_function: Callable = None) -> Dict:
-    return handle_call(data=data, routing_function=routing_function)
-
-
 def handle_call(data: Union[bytes, Dict] = None, routing_function: Callable = None) -> Dict:
     """Handles asynchronous function calls for the functions. This brings together the old create_async_handler
     and base_handler functions
@@ -144,8 +140,7 @@ def _route_function(function: str, args: Dict, routing_function: Callable = None
     # Handle external function call - this will route the function call to
     # another service / libraries' service
     if routing_function is not None:
-        data = {"function": function, "args": args}
-        return routing_function(data=data)
+        return routing_function(function_name=function, data=args)
     else:
         raise MissingFunctionError(f"Unable to match call to {function} to known functions")
 
@@ -170,6 +165,6 @@ def create_handler(routing_function: Callable = None) -> Callable:
          Returns:
              function: A handler function
         """
-        return _base_handler(routing_function=routing_function, data=data)
+        return handle_call(data=data, routing_function=routing_function)
 
     return handler

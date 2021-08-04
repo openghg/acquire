@@ -4,7 +4,7 @@ from io import BytesIO
 from typing import Dict
 
 
-def route(data: Dict):
+def route(function_name: str, data: Dict):
     """Route the call to a specific registry function
 
     Args:
@@ -18,7 +18,7 @@ def route(data: Dict):
 
     service_name = "storage"
 
-    return acquire_call(data=data, service_name=service_name)
+    return acquire_call(function_name=function_name, data=data, service_name=service_name)
 
 
 async def handle_invocation(ctx: InvokeContext, data: BytesIO) -> Response:
