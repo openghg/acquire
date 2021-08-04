@@ -1,10 +1,9 @@
-from fdk.context import InvokeContext
 import sys
 import os
 import subprocess
 from typing import Callable, Dict, Union, Type
 
-__all__ = ["handle_call", "create_handler", "create_async_handler", "MissingFunctionError"]
+__all__ = ["handle_call", "create_handler", "MissingFunctionError"]
 
 
 class MissingFunctionError(Exception):
@@ -57,6 +56,12 @@ def _base_handler(data: Union[bytes, Dict] = None, routing_function: Callable = 
 def handle_call(data: Union[bytes, Dict] = None, routing_function: Callable = None) -> Dict:
     """Handles asynchronous function calls for the functions. This brings together the old create_async_handler
     and base_handler functions
+
+    Args:
+        data: Data to be passed into function
+        routing_function: If not local call, function call will be routed to this function
+    Returns:
+        dict: Dictionary of data
     """
     from Acquire.Service import (
         push_is_running_service,
@@ -140,130 +145,9 @@ def _route_function(function: str, args: Dict, routing_function: Callable = None
     # another service / libraries' service
     if routing_function is not None:
         data = {"function": function, "args": args}
-        return routing_function(ctx=None, data=data)
+        return routing_function(data=data)
     else:
         raise MissingFunctionError(f"Unable to match call to {function} to known functions")
-
-
-def _handle(
-    ctx: InvokeContext = None,
-    function: str = None,
-    additional_function: Callable = None,
-    args: Dict = None,
-):
-    """This function routes calls to sub-functions, thereby allowing
-       a single identity function to stay hot for longer. If you want
-       to add additional functions then add them via the
-       'additional_function' argument. This should accept 'function'
-       and 'args', returning some output if the function is found,
-       or 'None' if the function is not available
-
-       Args:
-        additional_function (function, optional): function to route
-        args (dict): arguments to be routed with function\
-        Returns:
-            function: the routed function
-       """
-    raise NotImplementedError
-
-    from Acquire.Service import start_profile, end_profile
-
-    if args is None:
-        args = {}
-
-    pr = start_profile()
-
-    # if function != "warm":
-    #     one_hot_spare()
-
-    result = _route_function(ctx=ctx, function=function, args=args, additional_function=additional_function)
-
-    end_profile(pr, result)
-
-    return result
-
-
-# def _base_handler(additional_function=None, ctx=None, data=None):
-#     """This function routes calls to sub-functions, thereby allowing
-#     a single function to stay hot for longer. If you want
-#     to add additional functions then add them via the
-#     'additional_function' argument. This should accept 'function'
-#     and 'args', returning some output if the function is found,
-#     or 'None' if the function is not available
-
-#     Args:
-#      additional_function (function): function to be routed
-#      ctx: Invocation context passed to function if it's being called
-#      data: to be passed as arguments to other functions
-
-#      Returns:
-#          dict: JSON serialisable dict
-#     """
-#     # Make sure we set the flag to say that this code is running
-#     # as part of a service
-#     from Acquire.Service import (
-#         push_is_running_service,
-#         pop_is_running_service,
-#         unpack_arguments,
-#         get_service_private_key,
-#         pack_return_value,
-#         create_return_value,
-#     )
-
-#     push_is_running_service()
-
-#     # So this function unpacks the encrypted arguments sent by call_function
-#     # Then it calls the function, here _handle is the function that controls the
-#     # routing to the functions within each service
-#     #
-
-#     result = None
-
-#     try:
-#         function, args, keys = unpack_arguments(args=data, key=get_service_private_key)
-#     except Exception as e:
-#         function = None
-#         args = None
-#         result = e
-#         keys = None
-
-#     if result is None:
-#         try:
-#             result = _handle(
-#                 ctx=ctx,
-#                 function=function,
-#                 additional_function=additional_function,
-#                 args=args,
-#             )
-#         except Exception as e:
-#             result = e
-
-#     # Create a return value
-#     return_value_result = create_return_value(payload=result)
-
-#     try:
-#         packed_result = pack_return_value(payload=return_value_result, key=keys)
-#     except Exception as e:
-#         packed_result = pack_return_value(payload=create_return_value(payload=e))
-
-#     pop_is_running_service()
-
-#     return packed_result
-
-
-def create_async_handler(routing_function: Callable = None) -> Callable:
-    """Function that creates the async handler functions for all standard
-    functions, plus the passed routing_function
-
-    Args:
-        routing_function: Function to route call to if not internal call
-    Returns:
-        function: an async instance of the _base_handler function
-    """
-    async def async_handler(data: Dict = None):
-        return _base_handler(routing_function=routing_function, data=data)
-
-    return async_handler
 
 
 def create_handler(routing_function: Callable = None) -> Callable:

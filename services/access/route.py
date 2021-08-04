@@ -4,7 +4,7 @@ from io import BytesIO
 from typing import Dict, Union
 
 
-def route(ctx: InvokeContext, data: Dict):
+def route(data: Dict):
     """Route the call to a specific registry function
 
     Args:

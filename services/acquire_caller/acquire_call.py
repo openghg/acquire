@@ -16,7 +16,9 @@ def acquire_call(data: Dict, service_name: str) -> Dict:
         dict: Dictionary of data
     """
     # With an internal call we'll get a dict
+    # TODO - do we need this?
     if not isinstance(data, dict):
+        raise NotImplementedError
         try:
             data = msgpack.unpackb(data.read())
         except Exception:
