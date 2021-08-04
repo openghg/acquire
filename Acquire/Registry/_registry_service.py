@@ -42,8 +42,6 @@ class RegistryService(_Service):
 
         response = self.call_function(function="get_service", args=args)
 
-        print("\n\nResponse ", response)
-
         from Acquire.Service import Service as _Service
         service = _Service.from_data(response["service_info"])
 

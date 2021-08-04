@@ -4,15 +4,14 @@ from io import BytesIO
 from typing import Dict
 
 
-def route(function_name: str, data: Dict):
+def route(function_name: str, data: Dict) -> Dict:
     """Route the call to a specific registry function
 
     Args:
-        ctx: Invoke context. This is passed by Fn to the function
-        data: Data passed to the function by the user
+        function_name: Name of function to call
+        data: Dictionary of data for arguments
     Returns:
-        Response: Fn FDK response object containing function call data
-        and data returned from function call
+        dict: Dictionary of data
     """
     from acquire_caller.acquire_call import acquire_call
 
