@@ -9,7 +9,7 @@ import msgpack
 
 
 def acquire_call(
-    ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str
+    ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str, acquire_calling: bool = True
 ) -> Response:
     """Template to used to call a specific service function. This function is
         only called from the route functions of each respective function.
@@ -21,6 +21,9 @@ def acquire_call(
         Response: Fn FDK response object containing function call data
         and data returned from function call
     """
+    # So this needs to be moved into somewhere further down the line so this is actually an
+    # async function that unpacks all this data
+
     # With an internal call we'll get a dict
     if not isinstance(data, dict):
         try:

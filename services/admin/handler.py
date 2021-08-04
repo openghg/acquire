@@ -2,7 +2,7 @@ from fdk.context import InvokeContext
 import sys
 import os
 import subprocess
-from typing import Callable, Dict, Union
+from typing import Callable, Dict, Union, Type
 
 __all__ = ["create_handler", "create_async_handler", "MissingFunctionError"]
 
@@ -32,9 +32,59 @@ def _one_hot_spare():
     )
 
 
-def _route_function(
-    ctx: InvokeContext, function: str, args: Dict, additional_function: Callable = None
-):
+async def create_return_error(error: Type[Exception]) -> Dict:
+    """Returns an error from an async function call handler
+
+    Args:
+        error: Exception raised
+    Returns:
+        dict: Dictionary packed for return
+    """
+    from Acquire.Service import create_return_value, pack_return_value, pop_is_running_service
+
+    # Remove this running service from the
+    pop_is_running_service()
+    # Create a sensible return value from the exception
+    error_return: Dict[str, Union[str, Dict]] = create_return_value(payload=error)
+    # Pack the return value into a format expected
+    return pack_return_value(payload=error_return)
+
+
+async def async_handler(
+    ctx: InvokeContext, data: Union[bytes, Dict] = None, routing_function: Callable = None, loop: str = None
+) -> Dict:
+    """Handles asynchronous function calls for the functions. This brings together the old create_async_handler
+    and base_handler functions
+    """
+    from Acquire.Service import (
+        push_is_running_service,
+        unpack_arguments,
+        get_service_private_key,
+        pop_is_running_service,
+        pack_return_value,
+        create_return_value,
+    )
+
+    push_is_running_service()
+
+    try:
+        # Get the function name, arguments and keys for the function from the packed arguments
+        function, args, keys = unpack_arguments(args=data, key=get_service_private_key)
+        # Route the function call and arguments either to our internal functions or the
+        # the passed routing function once arguments have been unpacked and possibly decrypted
+        result = _route_function(function=function, args=args, routing_function=routing_function)
+
+        return_value = create_return_value(payload=result)
+        packed_return_value = pack_return_value(payload=return_value, key=keys)
+
+        pop_is_running_service()
+
+        return packed_return_value
+    except Exception as e:
+        return create_return_error(error=e)
+
+
+def _route_function(ctx: InvokeContext, function: Union[str, None], args: Dict, routing_function: Callable = None):
     """Internal function that correctly routes the named function
     to the actual code to run (passing in 'args' as arguments).
     If 'additional_function' is supplied then this will also
@@ -52,6 +102,7 @@ def _route_function(
     """
     from importlib import import_module
 
+    # Handle local Acquire functions
     if function is None:
         from admin.root import run as _root
 
@@ -70,13 +121,14 @@ def _route_function(
             except ModuleNotFoundError:
                 pass
 
-    if additional_function is not None:
-        data = {"function": function, "args": args}
-        return additional_function(ctx=ctx, data=data)
+    # Handle external function call - this will route the function call to
+    # another service / libraries' service
+    if routing_function is not None:
+        # data = {"function": function, "args": args}
+        # return routing_function(ctx=ctx, data=data)
+        return routing_function(function=function, args=args)
     else:
-        raise MissingFunctionError(
-            f"Unable to match call to {function} to known functions"
-        )
+        raise MissingFunctionError(f"Unable to match call to {function} to known functions")
 
 
 def _handle(
@@ -109,36 +161,11 @@ def _handle(
     # if function != "warm":
     #     one_hot_spare()
 
-    result = _route_function(
-        ctx=ctx, function=function, args=args, additional_function=additional_function
-    )
+    result = _route_function(ctx=ctx, function=function, args=args, additional_function=additional_function)
 
     end_profile(pr, result)
 
     return result
-
-
-def handle_function_call(ctx: InvokeContext, data: Union[bytes, Dict]):
-    """Handle a function call"""
-    from Acquire.Service import (
-        push_is_running_service,
-        pop_is_running_service,
-        unpack_arguments,
-        get_service_private_key,
-        pack_return_value,
-        create_return_value,
-    )
-
-    push_is_running_service()
-
-    function, args, keys = unpack_arguments(args=data, key=get_service_private_key)
-
-    pass
-
-
-def handle_function_return(data: Union[bytes, Dict]):
-    """Handles the data returned from a function call"""
-    pass
 
 
 def _base_handler(additional_function=None, ctx=None, data=None):
@@ -225,9 +252,7 @@ def create_async_handler(additional_function=None):
     """
 
     async def async_handler(ctx, data=None):
-        return _base_handler(
-            additional_function=additional_function, ctx=ctx, data=data
-        )
+        return _base_handler(additional_function=additional_function, ctx=ctx, data=data)
 
     return async_handler
 
@@ -252,8 +277,6 @@ def create_handler(additional_function=None):
          Returns:
              function: A handler function
         """
-        return _base_handler(
-            additional_function=additional_function, ctx=ctx, data=data
-        )
+        return _base_handler(additional_function=additional_function, ctx=ctx, data=data)
 
     return handler

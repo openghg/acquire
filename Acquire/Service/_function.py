@@ -1,5 +1,5 @@
 import json as _json
-from typing import Dict, Union
+from typing import Dict, Union, Type
 from Acquire.Crypto import PublicKey
 
 __all__ = [
@@ -55,9 +55,7 @@ def _get_key(key, fingerprint=None):
         if key is None:
             from Acquire.Crypto import KeyManipulationError
 
-            raise KeyManipulationError(
-                "Cannot find the key with fingerprint %s!" % fingerprint
-            )
+            raise KeyManipulationError("Cannot find the key with fingerprint %s!" % fingerprint)
         elif key.fingerprint() != fingerprint:
             from Acquire.Crypto import KeyManipulationError
 
@@ -69,7 +67,7 @@ def _get_key(key, fingerprint=None):
     return key
 
 
-def create_return_value(payload):
+def create_return_value(payload: Union[None, Type[Exception], Dict, str]) -> Dict:
     """Convenience function that creates a return value that can be
     passed back by a function. The 'payload' should either be
     a dictionary of return data, or it should be an exception.
@@ -101,8 +99,6 @@ def create_return_value(payload):
 
     except Exception as e:
         return {"status": -3, "error": str(e)}
-    except:
-        return {"status": -4, "error": "unknown"}
 
 
 def pack_return_value(
@@ -161,9 +157,7 @@ def pack_return_value(
         if sign_result:
             from Acquire.Service import PackingError
 
-            raise PackingError(
-                "The service must encrypt the response before it can be signed."
-            )
+            raise PackingError("The service must encrypt the response before it can be signed.")
     else:
         response = {}
         # Use msgpack to pack the encrypted data
@@ -172,9 +166,9 @@ def pack_return_value(
 
         if sign_result:
             # sign using the signing certificate for this service
-            signature = _get_signing_certificate(
-                fingerprint=sign_result, private_cert=private_cert
-            ).sign(encrypted_result)
+            signature = _get_signing_certificate(fingerprint=sign_result, private_cert=private_cert).sign(
+                encrypted_result
+            )
             response["signature"] = signature
 
         response["data"] = encrypted_result
@@ -189,9 +183,7 @@ def pack_return_value(
     return packed
 
 
-def pack_arguments(
-    function=None, args=None, key=None, response_key: PublicKey = None, public_cert=None
-):
+def pack_arguments(function=None, args=None, key=None, response_key: PublicKey = None, public_cert=None):
     """Pack the passed arguments, optionally encrypted using the passed key"""
     return pack_return_value(
         function=function,
@@ -272,9 +264,7 @@ def unpack_arguments(
     except Exception as e:
         from Acquire.Service import UnpackingError
 
-        raise UnpackingError(
-            "Cannot decode msgpack data from '%s' : %s" % (args, str(e))
-        )
+        raise UnpackingError("Cannot decode msgpack data from '%s' : %s" % (args, str(e)))
 
     # while not isinstance(data, dict):
     #     if not data:
@@ -299,8 +289,7 @@ def unpack_arguments(
             from Acquire.Service import RemoteFunctionCallError
 
             raise RemoteFunctionCallError(
-                "Calling %s on %s resulted in error: '%s'"
-                % (function, service, payload["error"])
+                "Calling %s on %s resulted in error: '%s'" % (function, service, payload["error"])
             )
 
         if "status" in payload:
@@ -339,8 +328,7 @@ def unpack_arguments(
 
             raise UnpackingError(
                 "We requested that the data was signed "
-                "when calling %s on %s, but a signature was not provided!"
-                % (function, service)
+                "when calling %s on %s, but a signature was not provided!" % (function, service)
             )
 
     # Verify and decrypt the encrypted data
@@ -371,9 +359,7 @@ def unpack_arguments(
     if payload is None:
         from Acquire.Service import UnpackingError
 
-        raise UnpackingError(
-            "We should have been able to extract the payload from " "%s" % data
-        )
+        raise UnpackingError("We should have been able to extract the payload from " "%s" % data)
 
     # If this is a return value we just want to return the payload
     if is_return_value:
@@ -385,12 +371,10 @@ def unpack_arguments(
     else:
         function = data.get("function")
 
-        return (function, payload, data)
+        return function, payload, data
 
 
-def unpack_return_value(
-    return_value: bytes, key=None, public_cert=None, function=None, service=None
-):
+def unpack_return_value(return_value: bytes, key=None, public_cert=None, function=None, service=None):
     """Call this to unpack the passed arguments that have been encoded
     by msgpack, packed using pack_arguments"""
     return unpack_arguments(
@@ -435,14 +419,10 @@ def _unpack_and_raise(function, service, exdata):
             mod = _importlib.import_module(exdata["module"])
             exclass = getattr(mod, exdata["class"])
 
-        ex = exclass(
-            "Error calling '%s' on '%s': %s" % (function, service, exdata["error"])
-        )
+        ex = exclass("Error calling '%s' on '%s': %s" % (function, service, exdata["error"]))
 
         try:
-            ex.__traceback__ = _tblib.Traceback.from_dict(
-                exdata["traceback"]
-            ).as_traceback()
+            ex.__traceback__ = _tblib.Traceback.from_dict(exdata["traceback"]).as_traceback()
         except:
             # cannot get the traceback...
             pass
@@ -452,8 +432,7 @@ def _unpack_and_raise(function, service, exdata):
 
         raise RemoteFunctionCallError(
             "An exception occurred while calling '%s' on '%s'\n\n"
-            "CAUSE: %s\n\nEXDATA: %s"
-            % (function, service, _exception_to_string(e), exdata)
+            "CAUSE: %s\n\nEXDATA: %s" % (function, service, _exception_to_string(e), exdata)
         )
 
     raise ex
@@ -550,8 +529,7 @@ def call_function(
 
         raise RemoteFunctionCallError(
             "Cannot call remote function '%s' as '%s'. Invalid error code "
-            "%d returned. Message:\n%s"
-            % (function, service_url, response.status_code, str(response.content))
+            "%d returned. Message:\n%s" % (function, service_url, response.status_code, str(response.content))
         )
 
     result = response.content
