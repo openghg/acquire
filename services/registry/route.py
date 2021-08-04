@@ -23,3 +23,5 @@ def route(ctx: InvokeContext, data: Union[Dict, BytesIO]) -> Response:
     service_name = "registry"
 
     return acquire_call(ctx=ctx, data=data, service_name=service_name)
+
+

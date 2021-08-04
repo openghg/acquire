@@ -24,6 +24,15 @@ def acquire_call(
     # So this needs to be moved into somewhere further down the line so this is actually an
     # async function that unpacks all this data
 
+    # Create an async_handler here
+
+    # So this works with tests but not with the actual calls ? 
+
+    # Don't need to pass ctx anywhere else
+    # Create a response.Response type that we can use to control errors etc maybe?
+
+    print("Within acquire_call : ", data)
+
     # With an internal call we'll get a dict
     if not isinstance(data, dict):
         try:
