@@ -520,7 +520,6 @@ def call_function(
         )
 
     args = None
-    args_json = None
     args_key = None
 
     # Check the call was a success
@@ -532,7 +531,14 @@ def call_function(
             "%d returned. Message:\n%s" % (function, service_url, response.status_code, str(response.content))
         )
 
+    # Get the body of the data
     result = response.content
+
+    try:
+        # Get the fdk Response data
+        result = response.body()
+    except Exception:
+        pass
 
     # Unpack the data here and pass in the private key for decryption
     unpacked_data = unpack_return_value(

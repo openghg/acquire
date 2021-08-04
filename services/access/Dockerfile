@@ -12,4 +12,4 @@ ADD route.py secret_key ./
 
 USER $FN_USER
 
-ENTRYPOINT ["/python/bin/fdk", "/function/route.py", "route"]
+ENTRYPOINT ["/python/bin/fdk", "/function/route.py", "handle_invocation"]
