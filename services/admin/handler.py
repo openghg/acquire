@@ -4,7 +4,7 @@ import os
 import subprocess
 from typing import Callable, Dict, Union, Type
 
-__all__ = ["create_handler", "create_async_handler", "MissingFunctionError"]
+__all__ = ["handle_call", "create_handler", "create_async_handler", "MissingFunctionError"]
 
 
 class MissingFunctionError(Exception):
@@ -51,6 +51,10 @@ async def create_return_error(error: Type[Exception]) -> Dict:
 
 
 def _base_handler(data: Union[bytes, Dict] = None, routing_function: Callable = None) -> Dict:
+    return handle_call(data=data, routing_function=routing_function)
+
+
+def handle_call(data: Union[bytes, Dict] = None, routing_function: Callable = None) -> Dict:
     """Handles asynchronous function calls for the functions. This brings together the old create_async_handler
     and base_handler functions
     """
@@ -97,7 +101,7 @@ def _base_handler(data: Union[bytes, Dict] = None, routing_function: Callable = 
     return result
 
 
-def _route_function(function: Union[str, None], args: Dict, routing_function: Callable = None):
+def _route_function(function: str, args: Dict, routing_function: Callable = None):
     """Internal function that correctly routes the named function
     to the actual code to run (passing in 'args' as arguments).
     If 'additional_function' is supplied then this will also
@@ -105,12 +109,10 @@ def _route_function(function: Union[str, None], args: Dict, routing_function: Ca
     match
 
     Args:
-     function: Function to call
-     args: arguments to be passed to the function
-     additional_function (function, optional): another function used to
-     process the function and arguments
-
-     Returns:
+        function: Function to call
+        args: arguments to be passed to the function
+        routing_function: external function to route call to
+    Returns:
         function : selected function
     """
     from importlib import import_module
@@ -258,7 +260,6 @@ def create_async_handler(routing_function: Callable = None) -> Callable:
     Returns:
         function: an async instance of the _base_handler function
     """
-
     async def async_handler(data: Dict = None):
         return _base_handler(routing_function=routing_function, data=data)
 

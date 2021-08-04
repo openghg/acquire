@@ -1,50 +1,30 @@
-from fdk.context import InvokeContext
-from fdk.response import Response
-from io import BytesIO
 import json
 import traceback
-from typing import Dict, Union
+from typing import Dict
 from importlib import import_module
 import msgpack
 
 
-def acquire_call(
-    ctx: InvokeContext, data: Union[Dict, BytesIO], service_name: str, acquire_calling: bool = True
-) -> Response:
+def acquire_call(data: Dict, service_name: str) -> Dict:
     """Template to used to call a specific service function. This function is
         only called from the route functions of each respective function.
 
     Args:
-        ctx: Invoke context. This is passed by Fn to the function
         data: Data passed to the function by the user
+        service_name: Name of service
     Returns:
-        Response: Fn FDK response object containing function call data
-        and data returned from function call
+        dict: Dictionary of data
     """
-    # So this needs to be moved into somewhere further down the line so this is actually an
-    # async function that unpacks all this data
-
-    # Create an async_handler here
-
-    # So this works with tests but not with the actual calls ? 
-
-    # Don't need to pass ctx anywhere else
-    # Create a response.Response type that we can use to control errors etc maybe?
-
-    print("Within acquire_call : ", data)
-
     # With an internal call we'll get a dict
     if not isinstance(data, dict):
         try:
             data = msgpack.unpackb(data.read())
-            # data = json.loads(data)
         except Exception:
             try:
                 data = json.loads(data.getvalue())
             except Exception:
                 tb = traceback.format_exc()
                 return {"Error": str(tb), "data": data.read()}
-                # return Response(ctx=ctx, response_data=)
 
     submodule_name = data["function"]
     args = data["args"]
@@ -56,11 +36,7 @@ def acquire_call(
 
     try:
         response_data = fn_to_call(args=args)
-        # headers = {"Content-type": "application/json"}
         return response_data
-        # return Response(ctx=ctx, response_data=response_data, headers=headers)
     except Exception:
         tb = traceback.format_exc()
-        error_data = {"Error": str(tb)}
-        return error_data
-        # return Response(ctx=ctx, response_data=error_data)
+        return {"Error": str(tb)}
