@@ -4,7 +4,7 @@ on:
   push:
     branches: [master, devel]
     tags:
-    - '*'
+      - "*"
   pull_request:
     branches: [master, devel]
 
@@ -19,25 +19,33 @@ jobs:
         operating-system: [ubuntu-latest]
         python-version: [3.7, 3.8, 3.9]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        persist-credentials: false
-        fetch-depth: 2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install pytest etc
-      run: |
-        python -m pip install --upgrade pip==20.2.4 wheel setuptools
-        pip install -r testing-requirements.txt
-        pip install .
-    - name: Test with pytest
-      run: |
-        pytest --cov=./ --cov-report=xml
-
-        
-
-
-    
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install pytest etc
+        run: |
+          python -m pip install --upgrade pip==20.2.4 wheel setuptools
+          pip install -r testing-requirements.txt
+          pip install .
+        env:
+          ACQUIRE_HOST: localhost
+      - name: Test with pytest
+        run: |
+          pytest --cov=./ --cov-report=xml
