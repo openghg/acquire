@@ -36,7 +36,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ steps.pip-cache.outputs.dir }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/testing-requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install pytest etc
@@ -44,8 +44,8 @@ jobs:
           python -m pip install --upgrade pip==20.2.4 wheel setuptools
           pip install -r testing-requirements.txt
           pip install .
-        env:
-          ACQUIRE_HOST: localhost
       - name: Test with pytest
         run: |
           pytest --cov=./ --cov-report=xml
+        env:
+          ACQUIRE_HOST: localhost
