@@ -1,9 +1,15 @@
-
 from Acquire.Service import ServiceError as _ServiceError
 
-__all__ = ["AccountingServiceError", "LedgerError", "TransactionError",
-           "AccountError", "UnbalancedLedgerError", "InsufficientFundsError",
-           "UnmatchedReceiptError", "PaymentError"]
+__all__ = [
+    "AccountingServiceError",
+    "LedgerError",
+    "TransactionError",
+    "AccountError",
+    "UnbalancedLedgerError",
+    "InsufficientFundsError",
+    "UnmatchedReceiptError",
+    "PaymentError",
+]
 
 
 class AccountingServiceError(_ServiceError):

@@ -1,16 +1,16 @@
-
 __all__ = ["ChunkUploader"]
 
 
 class ChunkUploader:
     """This class is used to control the chunked uploading
-       of a file. This allows a file to be uploaded
-       chunk by chunk (bit by bit). This is useful, e.g.
-       to upload a file as it is being written
+    of a file. This allows a file to be uploaded
+    chunk by chunk (bit by bit). This is useful, e.g.
+    to upload a file as it is being written
     """
+
     def __init__(self, drive_uid=None, file_uid=None):
         """Create a new ChunkUploader that uploads the specified
-           file to the specified drive
+        file to the specified drive
         """
         self._drive_uid = None
         self._file_uid = None
@@ -21,6 +21,7 @@ class ChunkUploader:
             self._drive_uid = str(drive_uid)
             self._file_uid = str(file_uid)
             from Acquire.Crypto import PrivateKey as _PrivateKey
+
             self._secret = _PrivateKey.random_passphrase()
 
     def __exit__(self, exception_type, exception_value, traceback):
@@ -72,10 +73,7 @@ class ChunkUploader:
         else:
             self._chunk_idx = self._chunk_idx + 1
 
-        secret = _Hash.multi_md5(self._secret,
-                                 "%s%s%d" % (self._drive_uid,
-                                             self._file_uid,
-                                             self._chunk_idx))
+        secret = _Hash.multi_md5(self._secret, "%s%s%d" % (self._drive_uid, self._file_uid, self._chunk_idx))
 
         args = {}
         args["drive_uid"] = self._drive_uid
@@ -94,12 +92,9 @@ class ChunkUploader:
     def close(self):
         """Close the uploader - this will finalise the file"""
         if self.is_open():
-            args = {"drive_uid": self._drive_uid,
-                    "file_uid": self._file_uid,
-                    "secret": self._secret}
+            args = {"drive_uid": self._drive_uid, "file_uid": self._file_uid, "secret": self._secret}
 
-            self.service().call_function(function="close_uploader",
-                                         args=args)
+            self.service().call_function(function="close_uploader", args=args)
 
             self._chunk_idx = None
             self._secret = None
@@ -108,8 +103,8 @@ class ChunkUploader:
 
     def to_data(self, pubkey=None):
         """Return a json-serialisable dictionary of the object. If
-           'pubkey' is supplied, then sensitive data used by the
-           uploader is encrypted
+        'pubkey' is supplied, then sensitive data used by the
+        uploader is encrypted
         """
         if self.is_null():
             return {}
@@ -122,8 +117,7 @@ class ChunkUploader:
 
         if pubkey is not None:
             from Acquire.Crypto import PublicKey as _PublicKey
-            from Acquire.ObjectStore import bytes_to_string \
-                as _bytes_to_string
+            from Acquire.ObjectStore import bytes_to_string as _bytes_to_string
             import json as _json
 
             if not isinstance(pubkey, _PublicKey):
@@ -140,8 +134,8 @@ class ChunkUploader:
     @staticmethod
     def from_data(data, privkey=None, service=None):
         """Return a ChunkUploader from a json-deserialised dictionary.
-           If this was encrypted then you need to supply a private
-           key to decrypt the sensitive data
+        If this was encrypted then you need to supply a private
+        key to decrypt the sensitive data
         """
         if data is None or len(data) == 0:
             return ChunkUploader()
@@ -158,12 +152,13 @@ class ChunkUploader:
                 raise PermissionError("Cannot decode as encrypted!")
 
             from Acquire.Crypto import PrivateKey as _PrivateKey
+
             if not isinstance(privkey, _PrivateKey):
                 raise TypeError("privkey must be type PrivateKey")
 
-            from Acquire.ObjectStore import string_to_bytes \
-                as _string_to_bytes
+            from Acquire.ObjectStore import string_to_bytes as _string_to_bytes
             import json as _json
+
             data = _json.loads(privkey.decrypt(_string_to_bytes(data["data"])))
 
         c._drive_uid = data["drive_uid"]

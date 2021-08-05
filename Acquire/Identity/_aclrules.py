@@ -1,4 +1,3 @@
-
 from enum import Enum as _Enum
 
 __all__ = ["ACLRules", "ACLUserRules", "ACLGroupRules", "ACLRuleOperation"]
@@ -62,6 +61,7 @@ def _load_rule(rule):
         return ACLGroupRules.from_data(classdata)
     elif classname == "ACLRule":
         from Acquire.Identity import ACLRule as _ACLRule
+
         return _ACLRule.from_data(classdata)
     else:
         raise TypeError("Unrecognised type '%s'" % classname)
@@ -69,9 +69,10 @@ def _load_rule(rule):
 
 class ACLGroupRules:
     """This class holds rules that apply to individual groups"""
+
     def __init__(self):
         """Construct, optionally starting with a default rule
-           is no groups are matched
+        is no groups are matched
         """
         self._group_rules = {}
 
@@ -90,10 +91,9 @@ class ACLGroupRules:
     def __repr__(self):
         return self.__str__()
 
-    def resolve(self, identifiers=None, must_resolve=True,
-                upstream=None, unresolved=False):
+    def resolve(self, identifiers=None, must_resolve=True, upstream=None, unresolved=False):
         """Resolve the rule for the user with specified group_guid.
-           This returns None if there are no rules for this group
+        This returns None if there are no rules for this group
         """
         try:
             group_guids = identifiers["group_guids"]
@@ -110,10 +110,12 @@ class ACLGroupRules:
         for group_guid in group_guids:
             if group_guid in self._group_rules:
                 rule = self._group_rules[group_guid]
-                rule.resolve(must_resolve=must_resolve,
-                             identifers=identifiers,
-                             upstream=upstream,
-                             unresolved=unresolved)
+                rule.resolve(
+                    must_resolve=must_resolve,
+                    identifers=identifiers,
+                    upstream=upstream,
+                    unresolved=unresolved,
+                )
                 if resolved is None:
                     resolved = rule
                 else:
@@ -122,10 +124,10 @@ class ACLGroupRules:
         if resolved is None:
             if must_resolve:
                 from Acquire.Identity import ACLRule as _ACLRule
-                return _ACLRule.inherit().resolve(must_resolve=True,
-                                                  identifiers=identifiers,
-                                                  upstream=upstream,
-                                                  unresolved=unresolved)
+
+                return _ACLRule.inherit().resolve(
+                    must_resolve=True, identifiers=identifiers, upstream=upstream, unresolved=unresolved
+                )
             else:
                 return None
         else:
@@ -151,7 +153,7 @@ class ACLGroupRules:
     @staticmethod
     def from_data(data):
         """Return the rules constructed from the passed json-deserialised
-           object
+        object
         """
         rules = ACLGroupRules()
 
@@ -164,9 +166,10 @@ class ACLGroupRules:
 
 class ACLUserRules:
     """This class holds rules that apply to individual users"""
+
     def __init__(self):
         """Construct, optionally starting with a default rule
-           if no users are matched
+        if no users are matched
         """
         self._user_rules = {}
 
@@ -185,10 +188,9 @@ class ACLUserRules:
     def __repr__(self):
         return self.__str__()
 
-    def resolve(self, must_resolve=True, identifiers=None,
-                upstream=None, unresolved=False):
+    def resolve(self, must_resolve=True, identifiers=None, upstream=None, unresolved=False):
         """Resolve the rule for the user with specified user_guid.
-           This returns None if there are no rules for this user
+        This returns None if there are no rules for this user
         """
         try:
             user_guids = identifiers["user_guids"]
@@ -205,10 +207,12 @@ class ACLUserRules:
         for user_guid in user_guids:
             if user_guid in self._user_rules:
                 rule = self._user_rules[user_guid]
-                rule.resolve(must_resolve=must_resolve,
-                             identifiers=identifiers,
-                             upstream=upstream,
-                             unresolved=unresolved)
+                rule.resolve(
+                    must_resolve=must_resolve,
+                    identifiers=identifiers,
+                    upstream=upstream,
+                    unresolved=unresolved,
+                )
                 if resolved is None:
                     resolved = rule
                 else:
@@ -217,10 +221,10 @@ class ACLUserRules:
         if resolved is None:
             if must_resolve:
                 from Acquire.Identity import ACLRule as _ACLRule
-                return _ACLRule.inherit().resolve(must_resolve=True,
-                                                  identifiers=identifiers,
-                                                  upstream=upstream,
-                                                  unresolved=unresolved)
+
+                return _ACLRule.inherit().resolve(
+                    must_resolve=True, identifiers=identifiers, upstream=upstream, unresolved=unresolved
+                )
             else:
                 return None
         else:
@@ -250,42 +254,38 @@ class ACLUserRules:
     @staticmethod
     def owner(user_guid=None, user_guids=None):
         """Simple shorthand to create the rule that the specified
-           user is the owner of the resource
+        user is the owner of the resource
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLUserRules._create(aclrule=_ACLRule.owner(),
-                                    user_guid=user_guid,
-                                    user_guids=user_guids)
+
+        return ACLUserRules._create(aclrule=_ACLRule.owner(), user_guid=user_guid, user_guids=user_guids)
 
     @staticmethod
     def executer(user_guid=None, user_guids=None):
         """Simple shorthand to create the rule that the specified
-           user is the executer of the resource
+        user is the executer of the resource
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLUserRules._create(aclrule=_ACLRule.executer(),
-                                    user_guid=user_guid,
-                                    user_guids=user_guids)
+
+        return ACLUserRules._create(aclrule=_ACLRule.executer(), user_guid=user_guid, user_guids=user_guids)
 
     @staticmethod
     def writer(user_guid=None, user_guids=None):
         """Simple shorthand to create the rule that the specified
-           user is the writer of the resource
+        user is the writer of the resource
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLUserRules._create(aclrule=_ACLRule.writer(),
-                                    user_guid=user_guid,
-                                    user_guids=user_guids)
+
+        return ACLUserRules._create(aclrule=_ACLRule.writer(), user_guid=user_guid, user_guids=user_guids)
 
     @staticmethod
     def reader(user_guid=None, user_guids=None):
         """Simple shorthand to create the rule that the specified
-           user is the reader of the resource
+        user is the reader of the resource
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLUserRules._create(aclrule=_ACLRule.reader(),
-                                    user_guid=user_guid,
-                                    user_guids=user_guids)
+
+        return ACLUserRules._create(aclrule=_ACLRule.reader(), user_guid=user_guid, user_guids=user_guids)
 
     def to_data(self):
         """Return a json-serialisable representation of these rules"""
@@ -299,7 +299,7 @@ class ACLUserRules:
     @staticmethod
     def from_data(data):
         """Return the rules constructed from the passed json-deserialised
-           object
+        object
         """
         rules = ACLUserRules()
 
@@ -323,15 +323,15 @@ def _is_inherit(aclrule):
 
 class ACLRules:
     """This class holds a combination of ACL rules. These are parsed
-       in order to get the ACL for a resource.
+    in order to get the ACL for a resource.
 
-       By default, this is a simple inherit rule (meaning that
-       it will inherit whatever comes from upstream)
+    By default, this is a simple inherit rule (meaning that
+    it will inherit whatever comes from upstream)
     """
-    def __init__(self, rule=None, rules=None, default_rule=None,
-                 default_operation=ACLRuleOperation.MAX):
+
+    def __init__(self, rule=None, rules=None, default_rule=None, default_operation=ACLRuleOperation.MAX):
         """Construct, optionally starting with a default ACLRule
-           for all users
+        for all users
         """
         if default_rule is None:
             self._is_simple_inherit = True
@@ -381,12 +381,10 @@ class ACLRules:
         return self.__str__()
 
     @staticmethod
-    def _create(rule, user_guid=None, group_guid=None,
-                user_guids=None, group_guids=None,
-                default_rule=None):
+    def _create(rule, user_guid=None, group_guid=None, user_guids=None, group_guids=None, default_rule=None):
         """Create and return the ACLRules that applies 'rules' to
-           everyone specified (or to everyone, if this is not
-           specified)
+        everyone specified (or to everyone, if this is not
+        specified)
         """
         from Acquire.Identity import ACLRule as _ACLRule
 
@@ -432,101 +430,104 @@ class ACLRules:
         return ACLRules(rules=rules, default_rule=default_rule)
 
     @staticmethod
-    def create(rule, user_guid=None, user_guids=None,
-               group_guid=None, group_guids=None,
-               default_rule=None):
+    def create(rule, user_guid=None, user_guids=None, group_guid=None, group_guids=None, default_rule=None):
         """Create and return the ACLRules that gives 'rule' to
-           everyone specified (or to everyone, if this is not
-           specified)
+        everyone specified (or to everyone, if this is not
+        specified)
         """
-        return ACLRules._create(user_guid=user_guid,
-                                user_guids=user_guids,
-                                group_guid=group_guid,
-                                group_guids=group_guids,
-                                default_rule=default_rule,
-                                rule=rule)
+        return ACLRules._create(
+            user_guid=user_guid,
+            user_guids=user_guids,
+            group_guid=group_guid,
+            group_guids=group_guids,
+            default_rule=default_rule,
+            rule=rule,
+        )
 
     @staticmethod
-    def owner(user_guid=None, user_guids=None,
-              group_guid=None, group_guids=None,
-              default_rule=None):
+    def owner(user_guid=None, user_guids=None, group_guid=None, group_guids=None, default_rule=None):
         """Create and return the ACLRules that gives ownership to
-           everyone specified (or to everyone, if this is not
-           specified)
+        everyone specified (or to everyone, if this is not
+        specified)
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLRules._create(user_guid=user_guid,
-                                user_guids=user_guids,
-                                group_guid=group_guid,
-                                group_guids=group_guids,
-                                default_rule=default_rule,
-                                rule=_ACLRule.owner())
+
+        return ACLRules._create(
+            user_guid=user_guid,
+            user_guids=user_guids,
+            group_guid=group_guid,
+            group_guids=group_guids,
+            default_rule=default_rule,
+            rule=_ACLRule.owner(),
+        )
 
     @staticmethod
-    def reader(user_guid=None, user_guids=None,
-               group_guid=None, group_guids=None,
-               default_rule=None):
+    def reader(user_guid=None, user_guids=None, group_guid=None, group_guids=None, default_rule=None):
         """Create and return the ACLRules that gives readership to
-           everyone specified (or to everyone, if this is not
-           specified)
+        everyone specified (or to everyone, if this is not
+        specified)
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLRules._create(user_guid=user_guid,
-                                user_guids=user_guids,
-                                group_guid=group_guid,
-                                group_guids=group_guids,
-                                default_rule=default_rule,
-                                rule=_ACLRule.reader())
+
+        return ACLRules._create(
+            user_guid=user_guid,
+            user_guids=user_guids,
+            group_guid=group_guid,
+            group_guids=group_guids,
+            default_rule=default_rule,
+            rule=_ACLRule.reader(),
+        )
 
     @staticmethod
-    def writer(user_guid=None, user_guids=None,
-               group_guid=None, group_guids=None,
-               default_rule=None):
+    def writer(user_guid=None, user_guids=None, group_guid=None, group_guids=None, default_rule=None):
         """Create and return the ACLRules that gives writership to
-           everyone specified (or to everyone, if this is not
-           specified)
+        everyone specified (or to everyone, if this is not
+        specified)
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLRules._create(user_guid=user_guid,
-                                user_guids=user_guids,
-                                group_guid=group_guid,
-                                group_guids=group_guids,
-                                default_rule=default_rule,
-                                rule=_ACLRule.writer())
+
+        return ACLRules._create(
+            user_guid=user_guid,
+            user_guids=user_guids,
+            group_guid=group_guid,
+            group_guids=group_guids,
+            default_rule=default_rule,
+            rule=_ACLRule.writer(),
+        )
 
     @staticmethod
-    def inherit(user_guid=None, user_guids=None,
-                group_guid=None, group_guids=None,
-                default_rule=None):
+    def inherit(user_guid=None, user_guids=None, group_guid=None, group_guids=None, default_rule=None):
         """Create and return the ACLRules that sets inherit to
-           everyone specified (or to everyone, if this is not
-           specified)
+        everyone specified (or to everyone, if this is not
+        specified)
         """
         from Acquire.Identity import ACLRule as _ACLRule
-        return ACLRules._create(user_guid=user_guid,
-                                user_guids=user_guids,
-                                group_guid=group_guid,
-                                group_guids=group_guids,
-                                default_rule=default_rule,
-                                rule=_ACLRule.inherit())
+
+        return ACLRules._create(
+            user_guid=user_guid,
+            user_guids=user_guids,
+            group_guid=group_guid,
+            group_guids=group_guids,
+            default_rule=default_rule,
+            rule=_ACLRule.inherit(),
+        )
 
     def is_simple_inherit(self):
         """Return whether or not this set of rules is a simple
-           'inherit all'
+        'inherit all'
         """
         return self._is_simple_inherit
 
     def set_default_operation(self, default_operation):
         """Set the default operation used to combine together rules"""
         if not isinstance(default_operation, ACLRuleOperation):
-            raise TypeError(
-                "The default operation must be type ACLRuleOperation")
+            raise TypeError("The default operation must be type ACLRuleOperation")
 
         self._default_operation = default_operation
 
     def set_default_rule(self, aclrule):
         """Set the default rule if nothing else matches (optionally
-           also specifying the default operation to combine rules)
+        also specifying the default operation to combine rules)
         """
         if self._is_simple_inherit:
             if _is_inherit(aclrule):
@@ -541,43 +542,41 @@ class ACLRules:
 
     def append(self, aclrule, operation=None, ensure_owner=False):
         """Append a rule onto the set of rules. This will resolve any
-           conflicts in the rules. If 'ensure_owner' is True, then
-           this will ensure that there is at least one user who
-           has unambiguous ownership of the resource controlled by
-           these ACL rules
+        conflicts in the rules. If 'ensure_owner' is True, then
+        this will ensure that there is at least one user who
+        has unambiguous ownership of the resource controlled by
+        these ACL rules
         """
         try:
             idx = len(self._rules)
         except:
             idx = 2
 
-        self.insert(idx=idx, aclrule=aclrule,
-                    operation=operation, ensure_owner=ensure_owner)
+        self.insert(idx=idx, aclrule=aclrule, operation=operation, ensure_owner=ensure_owner)
 
         return self
 
     def prepend(self, aclrule, operation=None, ensure_owner=False):
         """Prepend a rule onto the set of rules"""
-        self.insert(idx=0, aclrule=aclrule,
-                    operation=operation, ensure_owner=ensure_owner)
+        self.insert(idx=0, aclrule=aclrule, operation=operation, ensure_owner=ensure_owner)
 
         return self
 
     def insert(self, idx, aclrule, operation=None, ensure_owner=False):
         """Insert the passed rule at index 'idx', specifying the operation
-           used to combine this rule with what has gone before
-           (defaults to self._default_operation)
+        used to combine this rule with what has gone before
+        (defaults to self._default_operation)
         """
         if operation is not None:
             if not isinstance(operation, ACLRuleOperation):
-                raise TypeError(
-                    "The ACL operation must be type ACLRuleOperation")
+                raise TypeError("The ACL operation must be type ACLRuleOperation")
 
         if self._is_simple_inherit:
             if _is_inherit(aclrule):
                 return
             else:
                 from Acquire.Identity import ACLRule as _ACLRule
+
                 self._is_simple_inherit = False
                 self._default_rule = None
                 self._rules = [_ACLRule.inherit()]
@@ -595,52 +594,51 @@ class ACLRules:
 
     def rules(self):
         """Return the list of ACL rules that will be applied
-           in order (including the default rule, if set)
+        in order (including the default rule, if set)
         """
         if self._is_simple_inherit:
             from Acquire.Identity import ACLRule as _ACLRule
+
             return [(self._default_operation, _ACLRule.inherit())]
         else:
             import copy as copy
+
             r = copy.copy(self._rules)
             if self._default_rule is not None:
                 r.append((self._default_operation, self._default_rule))
 
             return r
 
-    def resolve(self, must_resolve=True, identifiers=None,
-                upstream=None, unresolved=False):
+    def resolve(self, must_resolve=True, identifiers=None, upstream=None, unresolved=False):
         """Resolve the rule based on the passed identifiers. This will
-           resolve the rules in order the final ACLRule has been
-           generated. If 'must_resolve' is True, then
-           this is guaranteed to return a fully-resolved simple ACLRule.
-           Anything unresolved is looked up from 'upstream', or set
-           equal to 'unresolved'
+        resolve the rules in order the final ACLRule has been
+        generated. If 'must_resolve' is True, then
+        this is guaranteed to return a fully-resolved simple ACLRule.
+        Anything unresolved is looked up from 'upstream', or set
+        equal to 'unresolved'
         """
         from Acquire.Identity import ACLRule as _ACLRule
 
         if self._is_simple_inherit:
-            return _ACLRule.inherit().resolve(must_resolve=must_resolve,
-                                              identifiers=identifiers,
-                                              upstream=upstream,
-                                              unresolved=unresolved)
+            return _ACLRule.inherit().resolve(
+                must_resolve=must_resolve, identifiers=identifiers, upstream=upstream, unresolved=unresolved
+            )
 
         result = None
         must_break = False
 
         for rule in self._rules:
             if isinstance(rule, tuple):
-                trule = tuple(rule)   # casting to stop linting error
+                trule = tuple(rule)  # casting to stop linting error
                 op = trule[0]
                 rule = trule[1]
             else:
                 op = self._default_operation
 
             # resolve the rule...
-            rule = rule.resolve(must_resolve=False,
-                                identifiers=identifiers,
-                                upstream=upstream,
-                                unresolved=unresolved)
+            rule = rule.resolve(
+                must_resolve=False, identifiers=identifiers, upstream=upstream, unresolved=unresolved
+            )
 
             if rule is not None:
                 if op is ACLRuleOperation.SET:
@@ -654,10 +652,9 @@ class ACLRules:
                     result = op.combine(result, rule)
 
         if (not must_break) and (self._default_rule is not None):
-            rule = self._default_rule.resolve(must_resolve=False,
-                                              identifiers=identifiers,
-                                              upstream=upstream,
-                                              unresolved=unresolved)
+            rule = self._default_rule.resolve(
+                must_resolve=False, identifiers=identifiers, upstream=upstream, unresolved=unresolved
+            )
             if result is None:
                 result = rule
             else:
@@ -668,25 +665,23 @@ class ACLRules:
             return _ACLRule.denied()
 
         if not isinstance(result, _ACLRule):
-            raise PermissionError(
-                "Did not fully resolve the ACLRule - got %s" % str(result))
+            raise PermissionError("Did not fully resolve the ACLRule - got %s" % str(result))
 
         if not result.is_fully_resolved():
             # we have not been able to generate a fully-resolved ACL
-            result = result.resolve(must_resolve=True,
-                                    identifiers=identifiers,
-                                    upstream=upstream,
-                                    unresolved=unresolved)
+            result = result.resolve(
+                must_resolve=True, identifiers=identifiers, upstream=upstream, unresolved=unresolved
+            )
 
         return result
 
     @staticmethod
     def from_data(data):
         """Construct these rules from the passed json-serialised
-           dictionary
+        dictionary
         """
         if isinstance(data, str) and data == "inherit":
-                return ACLRules()
+            return ACLRules()
 
         if data is not None and len(data) > 0:
 
@@ -696,8 +691,7 @@ class ACLRules:
                 default_rule = None
 
             if "default_operation" in data:
-                default_operation = \
-                    ACLRuleOperation.from_data(data["default_operation"])
+                default_operation = ACLRuleOperation.from_data(data["default_operation"])
             else:
                 default_operation = ACLRuleOperation.MAX
 
@@ -707,16 +701,13 @@ class ACLRules:
                     if isinstance(rule, dict):
                         aclrule = rule["rule"]
                         oper = rule["operation"]
-                        rules.append((ACLRuleOperation.from_data(oper),
-                                      _load_rule(aclrule)))
+                        rules.append((ACLRuleOperation.from_data(oper), _load_rule(aclrule)))
                     else:
                         rules.append((None, _load_rule(rule)))
             else:
                 rules = None
 
-            return ACLRules(default_rule=default_rule,
-                            default_operation=default_operation,
-                            rules=rules)
+            return ACLRules(default_rule=default_rule, default_operation=default_operation, rules=rules)
         else:
             return ACLRules()
 
@@ -743,8 +734,7 @@ class ACLRules:
                     if trule[0] is None:
                         rules.append(_save_rule(trule[1]))
                     else:
-                        rules.append({"operation": trule[0].to_data(),
-                                      "rule": _save_rule(trule[1])})
+                        rules.append({"operation": trule[0].to_data(), "rule": _save_rule(trule[1])})
                 else:
                     rules.append(_save_rule(rule))
 

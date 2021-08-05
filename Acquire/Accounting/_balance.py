@@ -1,24 +1,22 @@
-
 __all__ = ["Balance"]
 
 
 class Balance:
     """Very simple class that holds the balance, liability and
-       recievable values for an account at a point in time
+    recievable values for an account at a point in time
     """
-    def __init__(self, balance=None, liability=None, receivable=None,
-                 _is_safe=False):
+
+    def __init__(self, balance=None, liability=None, receivable=None, _is_safe=False):
         """Construct, optionally specifying the starting balance,
-           liability and receivable. These initialise to 0 if
-           not set
+        liability and receivable. These initialise to 0 if
+        not set
         """
         if _is_safe:
             self._balance = balance
             self._liability = liability
             self._receivable = receivable
         else:
-            from Acquire.ObjectStore import string_to_decimal \
-                as _string_to_decimal
+            from Acquire.ObjectStore import string_to_decimal as _string_to_decimal
 
             self._balance = _string_to_decimal(balance, default=0)
             self._liability = _string_to_decimal(liability, default=0)
@@ -42,6 +40,7 @@ class Balance:
             return self.balance() - self.liability()
         else:
             from Acquire.Accounting import create_decimal as _create_decimal
+
             overdraft_limit = _create_decimal(overdraft_limit)
             return self.balance() - self.liability() + overdraft_limit
 
@@ -50,8 +49,11 @@ class Balance:
         return self.available(overdraft_limit=overdraft_limit) < 0
 
     def __str__(self):
-        return "Balance(balance=%s, liability=%s, receivable=%s)" % \
-                (self.balance(), self.liability(), self.receivable())
+        return "Balance(balance=%s, liability=%s, receivable=%s)" % (
+            self.balance(),
+            self.liability(),
+            self.receivable(),
+        )
 
     def __repr__(self):
         return self.__str__()
@@ -59,21 +61,26 @@ class Balance:
     def __eq__(self, other):
         """Comparison"""
         if type(other) is Balance:
-            return self._balance == other._balance and \
-                   self._liability == other._liability and \
-                   self._receivable == other._receivable
+            return (
+                self._balance == other._balance
+                and self._liability == other._liability
+                and self._receivable == other._receivable
+            )
         else:
             return False
 
     def __add__(self, other):
         """Add balances together"""
         if type(other) is Balance:
-            return Balance(balance=self._balance+other._balance,
-                           liability=self._liability+other._liability,
-                           receivable=self._receivable+other._receivable,
-                           _is_safe=True)
+            return Balance(
+                balance=self._balance + other._balance,
+                liability=self._liability + other._liability,
+                receivable=self._receivable + other._receivable,
+                _is_safe=True,
+            )
 
         from Acquire.Accounting import TransactionInfo as _TransactionInfo
+
         if type(other) is _TransactionInfo:
             balance = self._balance
             liability = self._liability
@@ -98,49 +105,63 @@ class Balance:
             elif other.is_sent_refund():
                 balance -= other.value()
 
-            return Balance(balance=balance, liability=liability,
-                           receivable=receivable, _is_safe=True)
+            return Balance(balance=balance, liability=liability, receivable=receivable, _is_safe=True)
 
         from Acquire.Accounting import Transaction as _Transaction
+
         if type(other) is _Transaction:
-            return Balance(balance=self._balance+other.value(),
-                           liability=self._liability,
-                           receivable=self._receivable,
-                           _is_safe=True)
+            return Balance(
+                balance=self._balance + other.value(),
+                liability=self._liability,
+                receivable=self._receivable,
+                _is_safe=True,
+            )
 
         from Acquire.Accounting import create_decimal as _create_decimal
+
         value = _create_decimal(other)
-        return Balance(balance=self._balance+value,
-                       liability=self._liability,
-                       receivable=self._receivable,
-                       _is_safe=True)
+        return Balance(
+            balance=self._balance + value,
+            liability=self._liability,
+            receivable=self._receivable,
+            _is_safe=True,
+        )
 
     def __sub__(self, other):
         """Add balances together"""
         if type(other) is type(Balance):
-            return Balance(balance=self._balance-other._balance,
-                           liability=self._liability-other._liability,
-                           receivable=self._receivable-other._receivable,
-                           _is_safe=True)
+            return Balance(
+                balance=self._balance - other._balance,
+                liability=self._liability - other._liability,
+                receivable=self._receivable - other._receivable,
+                _is_safe=True,
+            )
 
         from Acquire.Accounting import Transaction as _Transaction
+
         if type(other) is _Transaction:
-            return Balance(balance=self._balance-other.value(),
-                           liability=self._liability,
-                           receivable=self._receivable,
-                           _is_safe=True)
+            return Balance(
+                balance=self._balance - other.value(),
+                liability=self._liability,
+                receivable=self._receivable,
+                _is_safe=True,
+            )
 
         from Acquire.Accounting import create_decimal as _create_decimal
+
         value = _create_decimal(other)
-        return Balance(balance=self._balance+value,
-                       liability=self._liability,
-                       receivable=self._receivable,
-                       _is_safe=True)
+        return Balance(
+            balance=self._balance + value,
+            liability=self._liability,
+            receivable=self._receivable,
+            _is_safe=True,
+        )
 
     @staticmethod
     def total(balances):
         """Return the sum of the passed balances"""
         from Acquire.Accounting import create_decimal as _create_decimal
+
         balance = _create_decimal(0)
         liability = _create_decimal(0)
         receivable = _create_decimal(0)
@@ -153,15 +174,14 @@ class Balance:
             liability += b._liability
             receivable += b._receivable
 
-        return Balance(balance=balance, liability=liability,
-                       receivable=receivable, _is_safe=True)
+        return Balance(balance=balance, liability=liability, receivable=receivable, _is_safe=True)
 
     def to_data(self):
         """Return this balance as a JSON-serialisable object"""
         data = {}
 
-        from Acquire.ObjectStore import decimal_to_string \
-            as _decimal_to_string
+        from Acquire.ObjectStore import decimal_to_string as _decimal_to_string
+
         data["balance"] = _decimal_to_string(self._balance)
         data["liability"] = _decimal_to_string(self._liability)
         data["receivable"] = _decimal_to_string(self._receivable)
@@ -174,12 +194,10 @@ class Balance:
         if data is None or len(data) == 0:
             return Balance()
 
-        from Acquire.ObjectStore import string_to_decimal \
-            as _string_to_decimal
+        from Acquire.ObjectStore import string_to_decimal as _string_to_decimal
 
         balance = _string_to_decimal(data["balance"])
         liability = _string_to_decimal(data["liability"])
         receivable = _string_to_decimal(data["receivable"])
 
-        return Balance(balance=balance, liability=liability,
-                       receivable=receivable, _is_safe=True)
+        return Balance(balance=balance, liability=liability, receivable=receivable, _is_safe=True)

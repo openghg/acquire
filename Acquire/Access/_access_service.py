@@ -38,7 +38,7 @@ class AccessService(_Service):
         """
         from access.route import access_functions as _access_functions
         from admin.handler import create_handler as _create_handler
-        
+
         from admin.handler import handle_call
 
         handler = _create_handler(_access_functions)
@@ -61,6 +61,4 @@ class AccessService(_Service):
         except Exception:
             from Acquire.Service import ServiceError
 
-            raise ServiceError(
-                "There is no trusted storage service known to this access " "service"
-            )
+            raise ServiceError("There is no trusted storage service known to this access " "service")

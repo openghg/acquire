@@ -1,4 +1,3 @@
-
 import os as _os
 import uuid as _uuid
 
@@ -7,23 +6,24 @@ __all__ = ["GCPAccount"]
 
 class GCPAccount:
     """This class abstracts all interaction with GCP login accounts. This
-       is a low-level account that allows us to connect to the object
-       store at a low-level and to call GCP functions
+    is a low-level account that allows us to connect to the object
+    store at a low-level and to call GCP functions
     """
 
     @staticmethod
     def _assert_valid_login_dict(login):
         """This function validates that the passed login dictionary
-           contains all of the keys needed to login"""
+        contains all of the keys needed to login"""
 
         if login is None:
             from Acquire.Service import AccountError
+
             raise AccountError("You need to supply login credentials!")
 
         if not isinstance(login, dict):
             from Acquire.Service import AccountError
-            raise AccountError(
-                "You need to supply a valid login credential dictionary!")
+
+            raise AccountError("You need to supply a valid login credential dictionary!")
 
         needed_keys = ["credentials", "project"]
 
@@ -35,14 +35,16 @@ class GCPAccount:
 
         if len(missing_keys) > 0:
             from Acquire.Service import AccountError
+
             raise AccountError(
                 "Cannot log in as the login dictionary "
-                "is missing the following data: %s" % str(missing_keys))
+                "is missing the following data: %s" % str(missing_keys)
+            )
 
     @staticmethod
     def get_login(login):
         """This function turns the passed login details into
-           a valid oci login
+        a valid oci login
         """
 
         # validate that all of the information is held in the
@@ -53,8 +55,8 @@ class GCPAccount:
     @staticmethod
     def _sanitise_bucket_name(bucket_name):
         """This function sanitises the passed bucket name. It will always
-           return a valid bucket name. If "None" is passed, then a new,
-           unique bucket name will be generated"""
+        return a valid bucket name. If "None" is passed, then a new,
+        unique bucket name will be generated"""
 
         if bucket_name is None:
             return str(_uuid.uuid4())
@@ -64,9 +66,9 @@ class GCPAccount:
     @staticmethod
     def create_and_connect_to_bucket(login_details, bucket_name=None):
         """Connect to the object store using the passed 'login_details', and
-           create a bucket called 'bucket_name". Return a handle to the
-           created bucket. If the bucket already exists this will return
-           a handle to the existing bucket
+        create a bucket called 'bucket_name". Return a handle to the
+        created bucket. If the bucket already exists this will return
+        a handle to the existing bucket
         """
         return GCPAccount.connect_to_bucket(login_details, bucket_name)
 
@@ -83,25 +85,25 @@ class GCPAccount:
             raise ImportError(
                 "Cannot import GCP. Please install GCP, e.g. via "
                 "'pip install google-cloud-storage' so that you can "
-                "connect to the Google Cloud Platform")
+                "connect to the Google Cloud Platform"
+            )
 
         login = GCPAccount.get_login(login_details)
         bucket = {}
         client = None
 
-        creds = _service_account.Credentials.from_service_account_info(
-                                                    login["credentials"])
+        creds = _service_account.Credentials.from_service_account_info(login["credentials"])
 
-        client = _storage.Client(credentials=creds,
-                                 project=login["project"])
+        client = _storage.Client(credentials=creds, project=login["project"])
 
         try:
             b = client.get_bucket(bucket_name)
         except Exception as e:
             from Acquire.Service import ServiceAccountError
+
             raise ServiceAccountError(
-                "Cannot connect to GCP - invalid credentials for bucket %s" %
-                bucket_name, e)
+                "Cannot connect to GCP - invalid credentials for bucket %s" % bucket_name, e
+            )
 
         bucket["client"] = client
         bucket["credentials"] = creds

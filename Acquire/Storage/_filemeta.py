@@ -1,16 +1,24 @@
-
 __all__ = ["FileMeta"]
 
 
 class FileMeta:
     """This is a lightweight class that holds the metadata about
-       a particular version of a file
+    a particular version of a file
     """
-    def __init__(self, filename=None, uid=None, filesize=None,
-                 checksum=None, uploaded_by=None, uploaded_when=None,
-                 compression=None, aclrules=None):
+
+    def __init__(
+        self,
+        filename=None,
+        uid=None,
+        filesize=None,
+        checksum=None,
+        uploaded_by=None,
+        uploaded_when=None,
+        compression=None,
+        aclrules=None,
+    ):
         """Construct, specifying the filename, and then optionally
-           other useful data
+        other useful data
         """
         self._filename = filename
         self._uid = uid
@@ -26,6 +34,7 @@ class FileMeta:
 
         if aclrules is not None:
             from Acquire.Storage import ACLRules as _ACLRules
+
             if not isinstance(aclrules, _ACLRules):
                 raise TypeError("The aclrules must be type ACLRules")
 
@@ -51,11 +60,12 @@ class FileMeta:
     def open(self, creds=None):
         """Open and return the File associated with this metadata"""
         from Acquire.Client import File as _File
+
         return _File.open(metadata=self, creds=creds)
 
     def _set_denied(self):
         """Call this function to remove all information that should
-           not be visible to someone who has denied access to the file
+        not be visible to someone who has denied access to the file
         """
         self._uid = None
         self._filesize = None
@@ -67,6 +77,7 @@ class FileMeta:
         self._creds = None
         self._drive_metadata = None
         from Acquire.Storage import ACLRule as _ACLRule
+
         self._acl = _ACLRule.denied()
 
     def is_null(self):
@@ -75,8 +86,8 @@ class FileMeta:
 
     def make_complete(self, creds=None):
         """Connect to the storage service and get all of the
-            metadata for this file, returning the complete
-            file data
+        metadata for this file, returning the complete
+        file data
         """
         if self.is_null() or self.is_complete():
             return self
@@ -86,23 +97,23 @@ class FileMeta:
 
         drive = self.drive().open(creds=creds)
 
-        filemetas = drive.list_files(filename=self.filename(),
-                                     include_metadata=True)
+        filemetas = drive.list_files(filename=self.filename(), include_metadata=True)
 
         if len(filemetas) != 1:
             raise PermissionError(
                 "Cannot make the filemeta complete! Incorrect filemetas "
-                "have been returned: %s" % str(filemetas))
+                "have been returned: %s" % str(filemetas)
+            )
 
         filemeta = filemetas[0]
 
-        assert(filemeta.is_complete())
-        assert(filemeta.filename() == self.filename())
+        assert filemeta.is_complete()
+        assert filemeta.filename() == self.filename()
         return filemeta
 
     def is_complete(self):
         """Return whether or not this file includes all of the
-           metadata. If not, then only the filename is available
+        metadata. If not, then only the filename is available
         """
         return self._uid is not None
 
@@ -116,9 +127,10 @@ class FileMeta:
 
     def _set_drive_metadata(self, metadata, creds=None):
         """Internal function called by "Drive" to store the metadata
-           of the drive that contains the file described by this metadata
+        of the drive that contains the file described by this metadata
         """
         from Acquire.Client import DriveMeta as _DriveMeta
+
         if not isinstance(metadata, _DriveMeta):
             raise TypeError("The metadata must be type DriveMeta")
 
@@ -127,6 +139,7 @@ class FileMeta:
         else:
             if creds is not metadata._creds:
                 from copy import copy as _copy
+
                 metadata = _copy(metadata)
                 metadata._creds = creds
 
@@ -135,20 +148,21 @@ class FileMeta:
 
     def location(self):
         """Return a global location for this file. This is unique
-           for this version of this file and can be used to locate
-           this file from any other service.
+        for this version of this file and can be used to locate
+        this file from any other service.
         """
         if self.is_null():
             return None
         elif self._drive_metadata is None:
             raise PermissionError(
-                "Cannot generate the location as we don't know "
-                "which drive this file has come from!")
+                "Cannot generate the location as we don't know " "which drive this file has come from!"
+            )
 
         from Acquire.Client import Location as _Location
-        return _Location(drive_guid=self._drive_metadata.guid(),
-                         filename=self.filename(),
-                         version=self.version())
+
+        return _Location(
+            drive_guid=self._drive_metadata.guid(), filename=self.filename(), version=self.version()
+        )
 
     def filename(self):
         """Return the name of the file"""
@@ -171,10 +185,11 @@ class FileMeta:
             return None
         elif self._drive_metadata is None:
             raise PermissionError(
-                "Cannot get the drive metadata as we don't know "
-                "which drive this file has come from!")
+                "Cannot get the drive metadata as we don't know " "which drive this file has come from!"
+            )
         else:
             from copy import copy as _copy
+
             return _copy(self._drive_metadata)
 
     def filesize(self):
@@ -193,7 +208,7 @@ class FileMeta:
 
     def is_compressed(self):
         """If known, return whether or not this file is stored and
-           transmitted in a compressed state
+        transmitted in a compressed state
         """
         if self.is_null():
             return False
@@ -202,7 +217,7 @@ class FileMeta:
 
     def compression_type(self):
         """Return the compression type for this file, if it is
-           stored and transmitted in a compressed state
+        stored and transmitted in a compressed state
         """
         if self.is_null():
             return None
@@ -211,7 +226,7 @@ class FileMeta:
 
     def uploaded_by(self):
         """If known, return the GUID of the user who uploaded
-           this version of the file
+        this version of the file
         """
         if self.is_null():
             return None
@@ -220,7 +235,7 @@ class FileMeta:
 
     def uploaded_when(self):
         """If known, return the datetime when this version of
-           the file was uploaded
+        the file was uploaded
         """
         if self.is_null():
             return None
@@ -229,7 +244,7 @@ class FileMeta:
 
     def version(self):
         """Return the unique string that describes the particular
-           version of this file
+        version of this file
         """
         if self._uid is None:
             return None
@@ -238,29 +253,26 @@ class FileMeta:
 
     def aclrules(self):
         """If known, return the ACL rules that were used to generate the ACL
-           for this file. Note that you can only see the ACL rules if
-           you are an owner of the file
+        for this file. Note that you can only see the ACL rules if
+        you are an owner of the file
         """
         try:
             return self._aclrules
         except:
             return None
 
-    def resolve_acl(self, identifiers=None, upstream=None,
-                    must_resolve=None, unresolved=False):
+    def resolve_acl(self, identifiers=None, upstream=None, must_resolve=None, unresolved=False):
         """Resolve the ACL for this file based on the passed arguments
-           (same as for ACLRules.resolve()). This returns the resolved
-           ACL, which is set as self.acl()
+        (same as for ACLRules.resolve()). This returns the resolved
+        ACL, which is set as self.acl()
         """
         aclrules = self.aclrules()
         if aclrules is None:
-            raise PermissionError(
-                "You do not have permission to resolve the ACLs for this file")
+            raise PermissionError("You do not have permission to resolve the ACLs for this file")
 
-        self._acl = aclrules.resolve(must_resolve=must_resolve,
-                                     identifiers=identifiers,
-                                     upstream=upstream,
-                                     unresolved=unresolved)
+        self._acl = aclrules.resolve(
+            must_resolve=must_resolve, identifiers=identifiers, upstream=upstream, unresolved=unresolved
+        )
 
         if not self._acl.is_owner():
             # only owners can see the ACLs
@@ -273,8 +285,8 @@ class FileMeta:
 
     def acl(self):
         """If known, return the ACL for this version of the file for the
-           user that requested this FileMeta (e.g. the user who listed
-           the drive containing this file)
+        user that requested this FileMeta (e.g. the user who listed
+        the drive containing this file)
         """
         try:
             return self._acl
@@ -283,25 +295,26 @@ class FileMeta:
 
     def assert_correct_data(self, filedata=None, filename=None):
         """Assert that the passed data is correct (right size and
-           checksum)
+        checksum)
         """
         if filedata is not None:
-            from Acquire.Access import get_size_and_checksum \
-                as _get_size_and_checksum
+            from Acquire.Access import get_size_and_checksum as _get_size_and_checksum
+
             (filesize, checksum) = _get_size_and_checksum(filedata)
         else:
-            from Acquire.Access import get_filesize_and_checksum \
-                as _get_filesize_and_checksum
+            from Acquire.Access import get_filesize_and_checksum as _get_filesize_and_checksum
+
             (filesize, checksum) = _get_filesize_and_checksum(filename)
 
         if (filesize != self._filesize) or (checksum != self._checksum):
             from Acquire.Storage import FileValidationError
+
             raise FileValidationError(
                 "Possible data corruption. Mismatch in file size or "
                 "checksum for file '%s'. "
-                "%s versus %s, and %s versus %s" %
-                (self._filename, filesize, self._filesize,
-                 checksum, self._checksum))
+                "%s versus %s, and %s versus %s"
+                % (self._filename, filesize, self._filesize, checksum, self._checksum)
+            )
 
     def to_data(self):
         """Return a json-serialisable dictionary of this object"""
@@ -344,8 +357,8 @@ class FileMeta:
             data["aclrules"] = aclrules.to_data()
 
         if self._datetime is not None:
-            from Acquire.ObjectStore import datetime_to_string \
-                as _datetime_to_string
+            from Acquire.ObjectStore import datetime_to_string as _datetime_to_string
+
             data["datetime"] = _datetime_to_string(self._datetime)
 
         return data
@@ -353,7 +366,7 @@ class FileMeta:
     @staticmethod
     def from_data(data):
         """Return a new FileMeta constructed from the passed json-deserialised
-           dictionary
+        dictionary
         """
         f = FileMeta()
 
@@ -373,8 +386,8 @@ class FileMeta:
                 f._user_guid = data["user_guid"]
 
             if "datetime" in data:
-                from Acquire.ObjectStore import string_to_datetime \
-                    as _string_to_datetime
+                from Acquire.ObjectStore import string_to_datetime as _string_to_datetime
+
                 f._datetime = _string_to_datetime(data["datetime"])
 
             if "compression" in data:
@@ -382,10 +395,12 @@ class FileMeta:
 
             if "acl" in data:
                 from Acquire.Client import ACLRule as _ACLRule
+
                 f._acl = _ACLRule.from_data(data["acl"])
 
             if "aclrules" in data:
                 from Acquire.Storage import ACLRules as _ACLRules
+
                 f._aclrules = _ACLRules.from_data(data["aclrules"])
 
         return f

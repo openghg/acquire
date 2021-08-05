@@ -21,13 +21,9 @@ def _get_wallet_password(confirm_password=False):
     import getpass as _getpass
 
     if confirm_password:
-        password = _getpass.getpass(
-            prompt="Please enter a password to encrypt your wallet: "
-        )
+        password = _getpass.getpass(prompt="Please enter a password to encrypt your wallet: ")
     else:
-        password = _getpass.getpass(
-            prompt="Please enter the password to decrypt your wallet: "
-        )
+        password = _getpass.getpass(prompt="Please enter the password to decrypt your wallet: ")
 
     if not confirm_password:
         return password
@@ -135,9 +131,7 @@ class Wallet:
             from Acquire.Service import get_this_service as _get_this_service
 
             service = _get_this_service(need_private_access=False)
-            raise PermissionError(
-                "You cannot open a Wallet on a running Service (%s)" % service
-            )
+            raise PermissionError("You cannot open a Wallet on a running Service (%s)" % service)
 
         self._wallet_key = None
         self._service_info = {}
@@ -250,9 +244,7 @@ class Wallet:
         from Acquire.ObjectStore import bytes_to_string as _bytes_to_string
         import json as _json
 
-        filename = self._get_userinfo_filename(
-            user_uid=user_uid, service_uid=service_uid
-        )
+        filename = self._get_userinfo_filename(user_uid=user_uid, service_uid=service_uid)
         key = self._get_wallet_key().public_key()
         data = _bytes_to_string(key.encrypt(_json.dumps(userinfo)))
 
@@ -280,9 +272,7 @@ class Wallet:
         """Read all info for the passed user at the identity service
         with UID service_uid
         """
-        filename = self._get_userinfo_filename(
-            user_uid=user_uid, service_uid=service_uid
-        )
+        filename = self._get_userinfo_filename(user_uid=user_uid, service_uid=service_uid)
         userinfo = _read_json(filename=filename)
         return self._unlock_userinfo(userinfo)
 
@@ -406,9 +396,7 @@ class Wallet:
         _output("Connecting to registry...")
         _flush_output()
 
-        registry = _get_trusted_registry_service(
-            service_uid=service_uid, service_url=service_url
-        )
+        registry = _get_trusted_registry_service(service_uid=service_uid, service_url=service_url)
 
         _output("...connected to registry %s" % registry)
         _flush_output()
@@ -487,9 +475,7 @@ class Wallet:
 
         if service_url is None:
             if service_uid is None:
-                raise PermissionError(
-                    "You need to specify one of service_uid or service_url"
-                )
+                raise PermissionError("You need to specify one of service_uid or service_url")
 
             # we need to look up the name...
             service_dir = Wallet._get_service_dir(service_uid)
@@ -503,13 +489,10 @@ class Wallet:
         else:
             from Acquire.Service import Service as _Service
 
-            service_url = _Service.get_canonical_url(
-                service_url, service_type=service_type
-            )
+            service_url = _Service.get_canonical_url(service_url, service_type=service_type)
 
             service_files = _glob.glob(
-                "%s/*/service_%s.json"
-                % (self._wallet_dir, _string_to_safestring(service_url))
+                "%s/*/service_%s.json" % (self._wallet_dir, _string_to_safestring(service_url))
             )
 
             for service_file in service_files:
@@ -527,9 +510,7 @@ class Wallet:
                 raise ServiceError("No service at %s:%s" % (service_url, service_uid))
 
             # we need to look this service up from the registry
-            service = self._get_service_from_registry(
-                service_url=service_url, service_uid=service_uid
-            )
+            service = self._get_service_from_registry(service_url=service_url, service_uid=service_uid)
             must_write = True
 
         # check if the keys need rotating - if they do, load up
@@ -543,16 +524,13 @@ class Wallet:
                 # registry...
                 _output("Something went wrong refreshing keys...")
                 _output("Refreshing service from the registry.")
-                service = self._get_service_from_registry(
-                    service_url=service_url, service_uid=service_uid
-                )
+                service = self._get_service_from_registry(service_url=service_url, service_uid=service_uid)
                 must_write = True
 
         if service_uid is not None:
             if service.uid() != service_uid:
                 raise PermissionError(
-                    "Disagreement over the service UID for '%s' (%s)"
-                    % (service, service_uid)
+                    "Disagreement over the service UID for '%s' (%s)" % (service, service_uid)
                 )
 
         if must_write:
@@ -643,8 +621,7 @@ class Wallet:
             from Acquire.Client import LoginError
 
             raise LoginError(
-                "Cannot find the service with UID %s: <%s> %s"
-                % (service_uid, e.__class__.__name__, str(e))
+                "Cannot find the service with UID %s: <%s> %s" % (service_uid, e.__class__.__name__, str(e))
             )
 
         if not service.can_identify_users():
@@ -656,9 +633,7 @@ class Wallet:
                 "a valid identity service!" % (service)
             )
 
-        userinfo = self._find_userinfo(
-            username=username, password=password, service_uid=service_uid
-        )
+        userinfo = self._find_userinfo(username=username, password=password, service_uid=service_uid)
 
         if username is None:
             username = userinfo["username"]
@@ -685,8 +660,7 @@ class Wallet:
             device_uid = None
 
         _output(
-            "\nLogging in to '%s', session '%s'..."
-            % (service.canonical_url(), short_uid),
+            "\nLogging in to '%s', session '%s'..." % (service.canonical_url(), short_uid),
             end="",
         )
 
@@ -769,6 +743,4 @@ class Wallet:
         except:
             pass
 
-        self._set_userinfo(
-            userinfo=userinfo, user_uid=user_uid, service_uid=service.uid()
-        )
+        self._set_userinfo(userinfo=userinfo, user_uid=user_uid, service_uid=service.uid())

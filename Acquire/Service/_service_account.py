@@ -132,8 +132,7 @@ def _get_this_service_data():
         from Acquire.Service import MissingServiceAccountError
 
         raise MissingServiceAccountError(
-            "You haven't yet created the service account "
-            "for this service. Please create an account first."
+            "You haven't yet created the service account " "for this service. Please create an account first."
         )
 
     return service
@@ -209,8 +208,7 @@ def setup_this_service(service_type, canonical_url, registry_uid, username, pass
             from Acquire.Service import ServiceAccountError
 
             raise ServiceAccountError(
-                "The service is currently under construction. Please "
-                "try again later..."
+                "The service is currently under construction. Please " "try again later..."
             )
 
     if service is None:
@@ -239,10 +237,7 @@ def setup_this_service(service_type, canonical_url, registry_uid, username, pass
 
     canonical_url = _Service.get_canonical_url(canonical_url)
 
-    if (
-        service.service_type() != service_type
-        or service.canonical_url() != canonical_url
-    ):
+    if service.service_type() != service_type or service.canonical_url() != canonical_url:
         from Acquire.Service import ServiceAccountError
 
         raise ServiceAccountError(
@@ -462,9 +457,7 @@ def _refresh_this_service_keys_and_certs(service_info, service_password):
 
     if service_info.last_key_update() == last_update:
         # no-one else has beaten us - write the updated keys to global state
-        _ObjectStore.set_object_from_json(
-            bucket, _service_key, service.to_data(service_password)
-        )
+        _ObjectStore.set_object_from_json(bucket, _service_key, service.to_data(service_password))
 
     m.unlock()
 
@@ -513,9 +506,7 @@ def get_this_service(need_private_access=False):
         if service_password is None:
             service_password = _get_service_password()
 
-        service_info = _refresh_this_service_keys_and_certs(
-            service_info, service_password
-        )
+        service_info = _refresh_this_service_keys_and_certs(service_info, service_password)
 
         if need_private_access:
             return _Service.from_data(service_info, service_password)
@@ -641,8 +632,7 @@ def load_service_key_from_objstore(fingerprint):
 
     if keyfile is None:
         raise KeyManipulationError(
-            "Cannot find a key or certificate with fingerprint '%s' : %s"
-            % (fingerprint, key)
+            "Cannot find a key or certificate with fingerprint '%s' : %s" % (fingerprint, key)
         )
 
     try:
@@ -653,8 +643,7 @@ def load_service_key_from_objstore(fingerprint):
 
     if keydata is None:
         raise KeyManipulationError(
-            "Unable to load the key or certificate with fingerprint '%s': %s"
-            % (fingerprint, error)
+            "Unable to load the key or certificate with fingerprint '%s': %s" % (fingerprint, error)
         )
 
     service = get_this_service(need_private_access=True)
@@ -726,9 +715,7 @@ def refresh_service_keys_and_certs(service, force_refresh=False):
 
     if service_info.last_key_update() == last_update:
         # no-one else has beaten us - write the updated keys to global state
-        _ObjectStore.set_object_from_json(
-            bucket, _service_key, service.to_data(_get_service_password())
-        )
+        _ObjectStore.set_object_from_json(bucket, _service_key, service.to_data(_get_service_password()))
 
     m.unlock()
 
@@ -759,8 +746,7 @@ def get_service_private_key(fingerprint=None):
                     "the fingerprint %s. This is either because you are "
                     "using a key that is too old or "
                     "you are requesting a wrong key. Please call "
-                    "refresh_keys on your Service object and try again: %s"
-                    % (str(s), fingerprint, str(e))
+                    "refresh_keys on your Service object and try again: %s" % (str(s), fingerprint, str(e))
                 )
 
     return key
@@ -789,8 +775,7 @@ def get_service_private_certificate(fingerprint=None):
                     "the fingerprint %s. This is either because you are "
                     "using a certificate that is too old or "
                     "you are requesting a wrong certificate. Please call "
-                    "refresh_keys on your Service object and try again: %s"
-                    % (str(s), fingerprint, str(e))
+                    "refresh_keys on your Service object and try again: %s" % (str(s), fingerprint, str(e))
                 )
 
     return cert
@@ -806,8 +791,7 @@ def get_service_public_key(fingerprint=None):
             from Acquire.Service import ServiceAccountError
 
             raise ServiceAccountError(
-                "Cannot find a public key for '%s' that matches "
-                "the fingerprint %s" % (str(s), fingerprint)
+                "Cannot find a public key for '%s' that matches " "the fingerprint %s" % (str(s), fingerprint)
             )
 
     return key

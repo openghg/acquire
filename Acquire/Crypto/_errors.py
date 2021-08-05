@@ -1,9 +1,11 @@
-
-
-__all__ = ["WeakPassphraseError", "KeyManipulationError",
-           "SignatureVerificationError",
-           "DecryptionError", "OTPError",
-           "RepeatedOTPCodeError"]
+__all__ = [
+    "WeakPassphraseError",
+    "KeyManipulationError",
+    "SignatureVerificationError",
+    "DecryptionError",
+    "OTPError",
+    "RepeatedOTPCodeError",
+]
 
 
 class WeakPassphraseError(Exception):

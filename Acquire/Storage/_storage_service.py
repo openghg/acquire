@@ -15,8 +15,7 @@ class StorageService(_Service):
             if not self.is_storage_service():
 
                 raise StorageServiceError(
-                    "Cannot construct an StorageService from "
-                    "a service which is not an storage service!"
+                    "Cannot construct an StorageService from " "a service which is not an storage service!"
                 )
         else:
             _Service.__init__(self)

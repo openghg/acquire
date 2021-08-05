@@ -1,13 +1,11 @@
-
 __all__ = ["get_session_info"]
 
 
-def get_session_info(identity_url, session_uid,
-                     scope=None, permissions=None):
+def get_session_info(identity_url, session_uid, scope=None, permissions=None):
     """Call the identity_url to obtain information about the
-       specified login session_uid. Optionally limit
-       the scope and permissions for which these certs would
-       be valid
+    specified login session_uid. Optionally limit
+    the scope and permissions for which these certs would
+    be valid
     """
     from Acquire.Service import get_trusted_service as _get_trusted_service
 

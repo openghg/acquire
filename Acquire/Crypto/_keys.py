@@ -52,16 +52,24 @@ def _assert_strong_passphrase(passphrase, mangleFunction):
         from Acquire.Crypto import WeakPassphraseError
 
         print(passphrase)
-        raise WeakPassphraseError("The pass-phrase '%s' must contain between " "6 and 50 characters" % passphrase)
+        raise WeakPassphraseError(
+            "The pass-phrase '%s' must contain between " "6 and 50 characters" % passphrase
+        )
 
     if len(passphrase) < 24:
         import re as _re
 
-        if not (_re.search(r"[A-Z]", passphrase) and _re.search(r"[a-z]", passphrase) and _re.search(r"[0-9]", passphrase)):
+        if not (
+            _re.search(r"[A-Z]", passphrase)
+            and _re.search(r"[a-z]", passphrase)
+            and _re.search(r"[0-9]", passphrase)
+        ):
             from Acquire.Crypto import WeakPassphraseError
 
             print(passphrase)
-            raise WeakPassphraseError("Short pass-phrases must contain numbers and " "upper- and lowercase characters")
+            raise WeakPassphraseError(
+                "Short pass-phrases must contain numbers and " "upper- and lowercase characters"
+            )
 
     # an MD5 passphrase is 32 characters, only lower case and numbers
 
@@ -178,7 +186,10 @@ class PublicKey:
 
         try:
             return self._pubkey.encrypt(
-                message, _padding.OAEP(mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None)
+                message,
+                _padding.OAEP(
+                    mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None
+                ),
             )
         except:
             pass
@@ -190,7 +201,10 @@ class PublicKey:
         token = f.encrypt(message)
 
         encrypted_key = self._pubkey.encrypt(
-            key, _padding.OAEP(mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None)
+            key,
+            _padding.OAEP(
+                mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None
+            ),
         )
 
         # the first 256 bytes are the encrypted key - the rest
@@ -217,7 +231,9 @@ class PublicKey:
         except Exception as e:
             from Acquire.Crypto import SignatureVerificationError
 
-            raise SignatureVerificationError("Error validating the signature " "for the passed message: %s" % str(e))
+            raise SignatureVerificationError(
+                "Error validating the signature " "for the passed message: %s" % str(e)
+            )
 
     def to_data(self):
         """Return this public key as a json-serialisable dictionary"""
@@ -414,7 +430,10 @@ class PrivateKey:
         # try standard decryption
         try:
             message = self._privkey.decrypt(
-                message, _padding.OAEP(mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None)
+                message,
+                _padding.OAEP(
+                    mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None
+                ),
             )
 
             try:
@@ -429,7 +448,9 @@ class PrivateKey:
         try:
             symkey = self._privkey.decrypt(
                 message[0:key_size],
-                _padding.OAEP(mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None),
+                _padding.OAEP(
+                    mgf=_padding.MGF1(algorithm=_hashes.SHA256()), algorithm=_hashes.SHA256(), label=None
+                ),
             )
         except Exception as e:
             from Acquire.Crypto import DecryptionError
@@ -468,7 +489,9 @@ class PrivateKey:
             message = message.encode("utf-8")
 
         signature = self._privkey.sign(
-            message, _padding.PSS(mgf=_padding.MGF1(_hashes.SHA256()), salt_length=_padding.PSS.MAX_LENGTH), _hashes.SHA256()
+            message,
+            _padding.PSS(mgf=_padding.MGF1(_hashes.SHA256()), salt_length=_padding.PSS.MAX_LENGTH),
+            _hashes.SHA256(),
         )
 
         return signature
@@ -675,7 +698,8 @@ class SymmetricKey:
             from Acquire.Crypto import DecryptionError
 
             raise DecryptionError(
-                "Cannot decrypt the message using the " "symmetric key: %s : %s : %s" % (str(e), self._symkey, message)
+                "Cannot decrypt the message using the "
+                "symmetric key: %s : %s : %s" % (str(e), self._symkey, message)
             )
 
         try:

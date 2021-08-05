@@ -33,7 +33,7 @@ def get_service_url(service: str = None, https: bool = False) -> str:
         raise ValueError("No ACQUIRE_HOST environment variable set")
 
     # Strip any quotation marks from the string
-    hostname = hostname.replace("'", "").replace('"', '')
+    hostname = hostname.replace("'", "").replace('"', "")
 
     local_hosts = ("localhost", "127.0.0.1")
     # Handle localhost - this can be used for testing
@@ -132,9 +132,7 @@ def refetch_trusted_service(service):
 
     registry = _get_trusted_registry_service(service_uid=service.uid())
     clear_services_cache()
-    service = registry.get_service(
-        service_uid=s["service_uid"], service_url=s["service_url"]
-    )
+    service = registry.get_service(service_uid=s["service_uid"], service_url=s["service_url"])
 
     from Acquire.Service import trust_service as _trust_service
 
@@ -144,9 +142,7 @@ def refetch_trusted_service(service):
 
 # Cached as the remote service information will not change too often
 @_cached(_cache_local_serviceinfo)
-def get_trusted_service(
-    service_url=None, service_uid=None, service_type=None, autofetch=True
-):
+def get_trusted_service(service_url=None, service_uid=None, service_type=None, autofetch=True):
     """Return the trusted service info for the service with specified
     service_url or service_uid"""
     if service_url is not None:
@@ -202,9 +198,7 @@ def get_trusted_service(
                 remote_service.refresh_keys()
 
                 if uidkey is not None:
-                    _ObjectStore.set_object_from_json(
-                        bucket, uidkey, remote_service.to_data()
-                    )
+                    _ObjectStore.set_object_from_json(bucket, uidkey, remote_service.to_data())
 
             return remote_service
 
@@ -212,13 +206,9 @@ def get_trusted_service(
             from Acquire.Service import ServiceAccountError
 
             if service_uid is not None:
-                raise ServiceAccountError(
-                    "We do not trust the service with UID '%s'" % service_uid
-                )
+                raise ServiceAccountError("We do not trust the service with UID '%s'" % service_uid)
             else:
-                raise ServiceAccountError(
-                    "We do not trust the service at URL '%s'" % service_url
-                )
+                raise ServiceAccountError("We do not trust the service at URL '%s'" % service_url)
 
         # we can try to fetch this data - we will ask our own
         # registry

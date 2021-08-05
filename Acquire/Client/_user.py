@@ -195,9 +195,7 @@ class User:
             return None
 
         if self._user_uid is None:
-            raise PermissionError(
-                "You cannot get the user UID until after you have logged in"
-            )
+            raise PermissionError("You cannot get the user UID until after you have logged in")
 
         return self._user_uid
 
@@ -382,9 +380,7 @@ class User:
             if self.is_logged_in():
                 from Acquire.Client import Authorisation as _Authorisation
 
-                authorisation = _Authorisation(
-                    resource="logout %s" % self._session_uid, user=self
-                )
+                authorisation = _Authorisation(resource="logout %s" % self._session_uid, user=self)
                 args["authorisation"] = authorisation.to_data()
             else:
                 # we are not fully logged in so cannot generate an
@@ -422,9 +418,7 @@ class User:
 
         from Acquire.Client import Credentials as _Credentials
 
-        encoded_password = _Credentials.encode_password(
-            identity_uid=service.uid(), password=password
-        )
+        encoded_password = _Credentials.encode_password(identity_uid=service.uid(), password=password)
 
         args = {"username": username, "password": encoded_password}
 
@@ -436,8 +430,7 @@ class User:
             from Acquire.Client import UserError
 
             raise UserError(
-                "Cannot register the user '%s' on "
-                "the identity service at '%s'!" % (username, identity_url)
+                "Cannot register the user '%s' on " "the identity service at '%s'!" % (username, identity_url)
             )
 
         # return a QR code for the provisioning URI
@@ -524,10 +517,7 @@ class User:
             login_url = None
 
         if login_url is None:
-            error = (
-                "Failed to login. Could not extract the login URL! "
-                "Result is %s" % (str(result))
-            )
+            error = "Failed to login. Could not extract the login URL! " "Result is %s" % (str(result))
             self._set_error_state(error)
             raise LoginError(error)
 
@@ -537,9 +527,8 @@ class User:
             session_uid = None
 
         if session_uid is None:
-            error = (
-                "Failed to login. Could not extract the login "
-                "session UID! Result is %s" % (str(result))
+            error = "Failed to login. Could not extract the login " "session UID! Result is %s" % (
+                str(result)
             )
 
             self._set_error_state(error)
@@ -556,10 +545,7 @@ class User:
         _output("Login by visiting: %s" % self._login_url)
 
         if login_message is not None:
-            _output(
-                "(please check that this page displays the message '%s')"
-                % login_message
-            )
+            _output("(please check that this page displays the message '%s')" % login_message)
 
         from Acquire.Identity import LoginSession as _LoginSession
 

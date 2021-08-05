@@ -1,20 +1,28 @@
-
 __all__ = ["Resources"]
 
 
 class Resources:
     """This class holds the full set of requestable resources needed
-       for a Job submitted to the system. This includes the
-       container URL for any container images used by the job,
-       the number of nodes and processors, the amount of memory per node,
-       the amount of disk space needed etc.
+    for a Job submitted to the system. This includes the
+    container URL for any container images used by the job,
+    the number of nodes and processors, the amount of memory per node,
+    the amount of disk space needed etc.
     """
-    def __init__(self, image=None, nodes=1, cores_per_node=1,
-                 mem_per_core="100MB", gpus_per_node=0, shape=None,
-                 tmp_disk_per_node="4GB", scratch_disk="10GB",
-                 campaign_disk="5GB"):
+
+    def __init__(
+        self,
+        image=None,
+        nodes=1,
+        cores_per_node=1,
+        mem_per_core="100MB",
+        gpus_per_node=0,
+        shape=None,
+        tmp_disk_per_node="4GB",
+        scratch_disk="10GB",
+        campaign_disk="5GB",
+    ):
         """Construct a set of resources specifying everything that may
-           be needed to obtain sufficient resource to run a job
+        be needed to obtain sufficient resource to run a job
         """
         self._image = str(image)
         self._nodes = int(nodes)

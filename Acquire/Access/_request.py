@@ -1,13 +1,13 @@
-
 __all__ = ["Request"]
 
 
 class Request:
     """This is the base class for all resource request classes. These
-       classes are used to transmit information about a resource
-       request, together with the user authorisation and account
-       from which payment for the resource should be taken
+    classes are used to transmit information about a resource
+    request, together with the user authorisation and account
+    from which payment for the resource should be taken
     """
+
     def __init__(self):
         """Construct the resource request"""
         pass
@@ -24,9 +24,9 @@ class Request:
     def to_data(self):
         """Return this class as a json-serialisable dictionary
 
-            Returns:
-                dict: returns a JSON serialisable dictionary
-                of this class
+        Returns:
+            dict: returns a JSON serialisable dictionary
+            of this class
         """
         data = {}
 
@@ -37,26 +37,27 @@ class Request:
     @staticmethod
     def from_data(data):
         """Construct a Request from the data in the JSON-deserialised
-           dictionary
+        dictionary
 
-           Args:
-                data (str): create a Request object from the JSON data
-            Returns:
-                Request: a Request object created from the JSON data
+        Args:
+             data (str): create a Request object from the JSON data
+         Returns:
+             Request: a Request object created from the JSON data
         """
 
-        if (data and len(data) > 0):
+        if data and len(data) > 0:
             try:
                 classname = data["class"]
             except:
                 return Request()
 
             if classname == "FileWriteRequest":
-                from ._filewriterequest import FileWriteRequest \
-                                            as _FileWriteRequest
+                from ._filewriterequest import FileWriteRequest as _FileWriteRequest
+
                 return _FileWriteRequest.from_data(data)
             elif classname == "RunRequest":
                 from ._runrequest import RunRequest as _RunRequest
+
                 return _RunRequest.from_data(data)
             else:
                 raise TypeError("Unknown type '%s'" % classname)
@@ -65,6 +66,6 @@ class Request:
 
     def _from_data(self, data):
         """Call this function from derived classes to load data
-           into this Request
+        into this Request
         """
         pass
