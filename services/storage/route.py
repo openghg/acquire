@@ -44,4 +44,5 @@ async def handle_invocation(ctx: InvokeContext, data: BytesIO) -> Response:
     returned_data = handle_call(data=data, routing_function=route)
     headers = {"Content-Type": "application/octet-stream"}
 
-    return Response(ctx=ctx, response_data=returned_data, headers=headers)
+    # return Response(ctx=ctx, response_data=returned_data, headers=headers)
+    return returned_data

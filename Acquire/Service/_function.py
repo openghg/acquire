@@ -423,7 +423,7 @@ def _unpack_and_raise(function, service, exdata):
 
         try:
             ex.__traceback__ = _tblib.Traceback.from_dict(exdata["traceback"]).as_traceback()
-        except:
+        except Exception:
             # cannot get the traceback...
             pass
     except Exception as e:
