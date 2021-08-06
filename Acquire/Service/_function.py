@@ -1,5 +1,6 @@
 import json as _json
-from io import BytesIO as _BytesIO
+from typing import Dict, Union, Type
+from Acquire.Crypto import PublicKey
 
 __all__ = [
     "call_function",
@@ -19,7 +20,9 @@ def _get_signing_certificate(fingerprint=None, private_cert=None):
         if private_cert.fingerprint() == fingerprint:
             return private_cert
 
-    from ._service_account import get_service_private_certificate as _get_service_private_certificate
+    from ._service_account import (
+        get_service_private_certificate as _get_service_private_certificate,
+    )
 
     return _get_service_private_certificate(fingerprint=fingerprint)
 
@@ -40,12 +43,10 @@ def _get_key(key, fingerprint=None):
     elif isinstance(key, dict):
         try:
             key = key["encryption_public_key"]
-        except:
+        except KeyError:
             key = None
 
         if key is not None:
-            from Acquire.ObjectStore import string_to_bytes as _string_to_bytes
-
             key = _PublicKey.read_bytes(key)
     else:
         key = key(fingerprint=fingerprint)
@@ -66,7 +67,7 @@ def _get_key(key, fingerprint=None):
     return key
 
 
-def create_return_value(payload):
+def create_return_value(payload: Union[None, Type[Exception], Dict, str]) -> Dict:
     """Convenience function that creates a return value that can be
     passed back by a function. The 'payload' should either be
     a dictionary of return data, or it should be an exception.
@@ -77,7 +78,11 @@ def create_return_value(payload):
             return {"status": 0}
 
         elif isinstance(payload, Exception):
-            err = {"class": str(payload.__class__.__name__), "module": str(payload.__class__.__module__), "error": str(payload)}
+            err = {
+                "class": str(payload.__class__.__name__),
+                "module": str(payload.__class__.__module__),
+                "error": str(payload),
+            }
 
             if payload.__traceback__ is not None:
                 import tblib as _tblib
@@ -94,11 +99,16 @@ def create_return_value(payload):
 
     except Exception as e:
         return {"status": -3, "error": str(e)}
-    except:
-        return {"status": -4, "error": "unknown"}
 
 
-def pack_return_value(function=None, payload=None, key=None, response_key=None, public_cert=None, private_cert=None):
+def pack_return_value(
+    function=None,
+    payload=None,
+    key=None,
+    response_key=None,
+    public_cert=None,
+    private_cert=None,
+):
     """Pack the passed result into a json string, optionally
     encrypting the result with the passed key, and optionally
     supplying a public response key, with which the function
@@ -107,7 +117,9 @@ def pack_return_value(function=None, payload=None, key=None, response_key=None, 
     Note that you can only ask the service to sign their response
     if you provide a 'reponse_key' for them to encrypt it with too
     """
-    from Acquire.ObjectStore import get_datetime_now_to_string as _get_datetime_now_to_string
+    from Acquire.ObjectStore import (
+        get_datetime_now_to_string as _get_datetime_now_to_string,
+    )
     import msgpack
 
     try:
@@ -132,7 +144,9 @@ def pack_return_value(function=None, payload=None, key=None, response_key=None, 
     elif sign_result and key is None:
         from Acquire.Service import PackingError
 
-        raise PackingError("You cannot ask the service to sign the response without also providing a key to encrypt it with too")
+        raise PackingError(
+            "You cannot ask the service to sign the response without also providing a key to encrypt it with too"
+        )
 
     result["payload"] = payload
     now = _get_datetime_now_to_string()
@@ -152,7 +166,9 @@ def pack_return_value(function=None, payload=None, key=None, response_key=None, 
 
         if sign_result:
             # sign using the signing certificate for this service
-            signature = _get_signing_certificate(fingerprint=sign_result, private_cert=private_cert).sign(encrypted_result)
+            signature = _get_signing_certificate(fingerprint=sign_result, private_cert=private_cert).sign(
+                encrypted_result
+            )
             response["signature"] = signature
 
         response["data"] = encrypted_result
@@ -167,9 +183,15 @@ def pack_return_value(function=None, payload=None, key=None, response_key=None, 
     return packed
 
 
-def pack_arguments(function=None, args=None, key=None, response_key=None, public_cert=None):
+def pack_arguments(function=None, args=None, key=None, response_key: PublicKey = None, public_cert=None):
     """Pack the passed arguments, optionally encrypted using the passed key"""
-    return pack_return_value(function=function, payload=args, key=key, response_key=response_key, public_cert=public_cert)
+    return pack_return_value(
+        function=function,
+        payload=args,
+        key=key,
+        response_key=response_key,
+        public_cert=public_cert,
+    )
 
 
 def exception_to_safe_exception(e):
@@ -188,12 +210,19 @@ def exception_to_safe_exception(e):
     return e
 
 
-def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, function=None, service=None):
+def unpack_arguments(
+    args: Union[str, bytes],
+    key=None,
+    public_cert=None,
+    is_return_value: bool = False,
+    function=None,
+    service=None,
+):
     """Call this to unpack the passed arguments that have been encoded
     as a json string, packed using pack_arguments.
 
     If is_return_value is True, then this will simply return
-    the unpacked return valu
+    the unpacked return value
 
     Otherwise, this will return a tuple containing
 
@@ -213,7 +242,14 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
 
 
     Args:
-     args (str) : should be a JSON encoded UTF-8
+        args: should be a JSON encoded UTF-8 string
+        key
+        public_cert
+        is_return_value: Are we
+        function
+        service
+    Returns:
+
     """
     import msgpack
 
@@ -224,7 +260,6 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
             return (None, None, None)
 
     try:
-        # data = _json.loads(args)
         data = msgpack.unpackb(args)
     except Exception as e:
         from Acquire.Service import UnpackingError
@@ -253,7 +288,9 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
         if len(payload) == 1 and "error" in payload:
             from Acquire.Service import RemoteFunctionCallError
 
-            raise RemoteFunctionCallError("Calling %s on %s resulted in error: '%s'" % (function, service, payload["error"]))
+            raise RemoteFunctionCallError(
+                "Calling %s on %s resulted in error: '%s'" % (function, service, payload["error"])
+            )
 
         if "status" in payload:
             if payload["status"] != 0:
@@ -263,14 +300,13 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
                     from Acquire.Service import RemoteFunctionCallError
 
                     raise RemoteFunctionCallError(
-                        "Calling %s on %s exited with status %d: %s" % (function, service, payload["status"], payload)
+                        "Calling %s on %s exited with status %d: %s"
+                        % (function, service, payload["status"], payload)
                     )
 
-    is_encrypted = data.get("encrypted")
+    is_encrypted = data.get("encrypted", False)
 
-    from Acquire.ObjectStore import string_to_bytes as _string_to_bytes
-
-    if public_cert:
+    if public_cert is not None:
         if not is_encrypted:
             from Acquire.Service import UnpackingError
 
@@ -280,11 +316,12 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
                 "Response == %s" % (function, service, _json.dumps(data))
             )
 
-        try:
-            # signature = _string_to_bytes(data["signature"])
-            signature = data["signature"]
-        except KeyError:
-            signature = None
+        signature = data.get("signature")
+        # try:
+        #     # signature = _string_to_bytes(data["signature"])
+        #     signature = data["signature"]
+        # except KeyError:
+        #     signature = None
 
         if signature is None:
             from Acquire.Service import UnpackingError
@@ -294,12 +331,12 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
                 "when calling %s on %s, but a signature was not provided!" % (function, service)
             )
 
+    # Verify and decrypt the encrypted data
     if is_encrypted:
         encrypted_data = data["data"]
-
         fingerprint = data.get("fingerprint")
 
-        if public_cert:
+        if public_cert is not None:
             try:
                 public_cert.verify(signature, encrypted_data)
             except Exception as e:
@@ -310,15 +347,21 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
                     "know! %s" % (function, service, str(e))
                 )
 
-        decrypted_data = _get_key(key, fingerprint).decrypt(encrypted_data)
+        decrypted_data = _get_key(key=key, fingerprint=fingerprint).decrypt(encrypted_data)
 
-        return unpack_arguments(args=decrypted_data, is_return_value=is_return_value, function=function, service=service)
+        return unpack_arguments(
+            args=decrypted_data,
+            is_return_value=is_return_value,
+            function=function,
+            service=service,
+        )
 
     if payload is None:
         from Acquire.Service import UnpackingError
 
         raise UnpackingError("We should have been able to extract the payload from " "%s" % data)
 
+    # If this is a return value we just want to return the payload
     if is_return_value:
         try:
             return payload["return"]
@@ -328,14 +371,19 @@ def unpack_arguments(args, key=None, public_cert=None, is_return_value=False, fu
     else:
         function = data.get("function")
 
-        return (function, payload, data)
+        return function, payload, data
 
 
-def unpack_return_value(return_value, key=None, public_cert=None, function=None, service=None):
+def unpack_return_value(return_value: bytes, key=None, public_cert=None, function=None, service=None):
     """Call this to unpack the passed arguments that have been encoded
-    as a json string, packed using pack_arguments"""
+    by msgpack, packed using pack_arguments"""
     return unpack_arguments(
-        return_value, key=key, public_cert=public_cert, is_return_value=True, function=function, service=service
+        args=return_value,
+        key=key,
+        public_cert=public_cert,
+        is_return_value=True,
+        function=function,
+        service=service,
     )
 
 
@@ -375,7 +423,7 @@ def _unpack_and_raise(function, service, exdata):
 
         try:
             ex.__traceback__ = _tblib.Traceback.from_dict(exdata["traceback"]).as_traceback()
-        except:
+        except Exception:
             # cannot get the traceback...
             pass
     except Exception as e:
@@ -401,10 +449,17 @@ def exception_to_string(e):
     return "".join(lines)
 
 
-def call_function(service_url, function=None, args=None, args_key=None, response_key=None, public_cert=None):
+def call_function(
+    service_url,
+    function: str = None,
+    args: Dict = None,
+    args_key=None,
+    response_key=None,
+    public_cert=None,
+):
     """Call the remote function called 'function' at 'service_url' passing
     in named function arguments in 'kwargs'. If 'args_key' is supplied,
-    then encrypt the arguments using 'args'. If 'response_key'
+    then encrypt the arguments using 'args_key'. If 'response_key'
     is supplied, then tell the remote server to encrypt the response
     using the public version of 'response_key', so that we can
     decrypt it in the response. If 'public_cert' is supplied then
@@ -435,29 +490,39 @@ def call_function(service_url, function=None, args=None, args_key=None, response
 
     response_key = _get_key(response_key)
 
+    # If we have a key encrypt the arguments and ask the function to encrypt
+    # its response with the public key we give it
     if response_key:
-        args_json = pack_arguments(
-            function=function, args=args, key=args_key, response_key=response_key.public_key(), public_cert=public_cert
+        args_msgpack = pack_arguments(
+            function=function,
+            args=args,
+            key=args_key,
+            response_key=response_key.public_key(),
+            public_cert=public_cert,
         )
     else:
-        args_json = pack_arguments(function=function, args=args, key=args_key)
+        args_msgpack = pack_arguments(function=function, args=args, key=args_key)
 
     response = None
+
     try:
-        # headers = {"content-type": "binary/octet-stream"}
-        response = _requests.post(url=service_url, data=args_json, timeout=60.0)
+        response = _requests.post(
+            url=service_url,
+            data=args_msgpack,
+            timeout=60.0,
+        )
     except Exception as e:
         from Acquire.Service import RemoteFunctionCallError
 
         raise RemoteFunctionCallError(
             "Cannot call remote function '%s' at '%s' because of a possible "
-            "network issue: requests exeption = '%s'" % (function, service_url, str(e))
+            "network issue: requests exception = '%s'" % (function, service_url, str(e))
         )
 
     args = None
-    args_json = None
     args_key = None
 
+    # Check the call was a success
     if response.status_code != 200:
         from Acquire.Service import RemoteFunctionCallError
 
@@ -466,8 +531,22 @@ def call_function(service_url, function=None, args=None, args_key=None, response
             "%d returned. Message:\n%s" % (function, service_url, response.status_code, str(response.content))
         )
 
+    # Get the body of the data
     result = response.content
 
-    return unpack_return_value(
-        return_value=result, key=response_key, public_cert=public_cert, function=function, service=service_url
+    try:
+        # Get the fdk Response data
+        result = response.body()
+    except Exception:
+        pass
+
+    # Unpack the data here and pass in the private key for decryption
+    unpacked_data = unpack_return_value(
+        return_value=result,
+        key=response_key,
+        public_cert=public_cert,
+        function=function,
+        service=service_url,
     )
+
+    return unpacked_data

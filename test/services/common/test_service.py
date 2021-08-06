@@ -1,19 +1,19 @@
-
 import pytest
 
 from Acquire.Identity import Authorisation
 from Acquire.Crypto import PrivateKey, get_private_key
-from Acquire.Service import call_function, Service, get_this_service, \
-                push_testing_objstore, pop_testing_objstore, \
-                push_is_running_service, pop_is_running_service
+from Acquire.Service import (
+    call_function,
+    Service,
+    get_this_service,
+    push_testing_objstore,
+    pop_testing_objstore,
+    push_is_running_service,
+    pop_is_running_service,
+)
 
 
-@pytest.mark.parametrize("service_url",
-                         [("registry"),
-                          ("identity"),
-                          ("storage"),
-                          ("access"),
-                          ("compute")])
+@pytest.mark.parametrize("service_url", [("registry"), ("identity"), ("storage"), ("access"), ("compute")])
 def test_service(service_url, aaai_services):
     # get the public service from the default API frontend
     privkey = get_private_key("testing")
@@ -34,26 +34,24 @@ def test_service(service_url, aaai_services):
     encrypted = service.encrypt_data(data)
     decrypted = private_service.decrypt_data(encrypted)
 
-    assert(data == decrypted)
+    assert data == decrypted
 
     signed = private_service.sign_data(data)
     verified = service.verify_data(signed)
 
-    assert(data == verified)
+    assert data == verified
 
     enc_sign = service.encrypt_data(private_service.sign_data(data))
     dec_ver = service.verify_data(private_service.decrypt_data(enc_sign))
 
-    assert(data == dec_ver)
+    assert data == dec_ver
 
     service.call_function("admin.test")
 
     admin_user = aaai_services[service_url]["user"]
-    auth = Authorisation(user=admin_user,
-                         resource="dump_keys %s" % service.uid())
+    auth = Authorisation(user=admin_user, resource="dump_keys %s" % service.uid())
 
-    service.call_function(
-        function="dump_keys", args={"authorisation": auth.to_data()})
+    service.call_function(function="dump_keys", args={"authorisation": auth.to_data()})
 
 
 def test_service_incorrect_function(aaai_services):

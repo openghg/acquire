@@ -12,65 +12,65 @@ Once SSL is working, we will close 8080...
 
 ## Step 2 - Install Fn pre-requisites
 
-Fn requires Docker 17.10.0-ce or later. Install this, e.g. on Oracle Linux 7
+Fn requires Docker 17.10.0-ce or later. To install thisInstall this, e.g. on CentOS
 using
 
 ```
-# cd /etc/yum.repos.d/
-# sudo wget http://yum.oracle.com/public-yum-ol7.repo
-# sudo vi public-yum-ol7.repo
-
-[ol7_latest]
-name=Oracle Linux $releasever Latest ($basearch)
-baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/latest/$basearch/
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
-gpgcheck=1
-enabled=1
-
-[ol7_UEKR4]
-name=Latest Unbreakable Enterprise Kernel Release 4 for Oracle Linux $releasever ($basearch)
-baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/UEKR4/$basearch/
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
-gpgcheck=1
-enabled=1
-
-[ol7_addons]
-name=Oracle Linux $releasever Add ons ($basearch)
-baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/addons/$basearch/
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
-gpgcheck=1
-enabled=1
-
-# sudo yum install docker-engine
+$ sudo yum install -y yum-utils
+$ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+$ sudo yum install docker-ce docker-ce-cli containerd.io
 ```
+
+Note that you may be prompted to accept a GPG key, if so, please check it matches the
+key given at https://docs.docker.com/engine/install/centos/.
 
 Now start docker and ensure it runs on login
 
 ```
-# sudo systemctl start docker
-# sudo systemctl enable docker
+$ sudo systemctl start docker
+$ sudo systemctl enable docker
 ```
 
-(you may need to add your user to the 'docker' group so that you
- have permission to use docker - check using `docker ps`)
-
-## Install Fn
-
-Now install Fn - bit insecure as need to execute a curl!
+To test that Docker is functioning correctly run
 
 ```
-# curl -LSs https://raw.githubusercontent.com/fnproject/cli/master/install | sudo sh
+$ sudo docker run hello-world
 ```
 
-## Start Fn
+As Fn does not currently work with rootless docker we need to add our current user to the `docker` group.
+Note that this does come with security implications which
+are `outlined here <https://docs.docker.com/engine/security/#docker-daemon-attack-surface>`.
 
 ```
-# fn start
+$ sudo usermod -aG docker $USER
 ```
 
-Check this has worked by navigating to `http://{IP_ADDRESS}:8080`
+## Step 3 - Install and start Fn
 
-## Set up DNS and SSL
+To install Fn we use a script provided by the Fn project. Instead of piping directly from curl we download
+the script and check its hash before running it.
+
+```
+$ wget https://raw.githubusercontent.com/fnproject/cli/master/install
+$ echo a02456b8c8aba8b727d35f704cbca9234e40d2731f200b94abeceb9467973a13 install | sha256sum -c
+```
+
+This should have printed `install: OK`. If not, check the bash script carefully.
+We can now install Fn using the script.
+
+```
+$ sh install_fn.sh
+```
+
+We can now start Fn using
+
+```
+$ fn start
+```
+
+Check this has worked by navigating to `http://{IP_ADDRESS_OF_SERVER}:8080`
+
+## Step 4 - Set up DNS and SSL
 
 Optional - if you want to secure access to your service then you need
 to create a DNS record for your service. First, create a DNS ANAME record
@@ -80,20 +80,20 @@ Next, install nginx as we will use this as the loadbalancer to handle
 SSL.
 
 ```
-# sudo yum install nginx
-# sudo yum install certbot python2-certbot-nginx
-# sudo systemctl enable nginx
-# sudo systemctl start nginx
+$ sudo yum install nginx
+$ sudo yum install certbot python2-certbot-nginx
+$ sudo systemctl enable nginx
+$ sudo systemctl start nginx
 ```
 
 Now make sure that the local firewall allow http and https traffic
 
 ```
-# sudo systemctl enable firewalld
-# sudo firewall-cmd --zone=public --add-port=80/tcp
-# sudo firewall-cmd --zone=public --add-port=443/tcp
-# sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
-# sudo firewall-cmd --zone=public --add-port=443/tcp --permanent
+$ sudo systemctl enable firewalld
+$ sudo firewall-cmd --zone=public --add-port=80/tcp
+$ sudo firewall-cmd --zone=public --add-port=443/tcp
+$ sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
+$ sudo firewall-cmd --zone=public --add-port=443/tcp --permanent
 ```
 
 Navigate to `http://{IP_ADDRESS_OF_SERVER}` to see if you can see the
@@ -223,96 +223,139 @@ http {
 }}
 ```
 
-And then, you may need to let selinux know that you need to allow
-nginx to route to fn. You can check this by running;
+And then, you may need to let SELinux know that you need to allow
+nginx to route to Fn. You can check this by running;
 
 ```
-# sudo cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
+$ sudo cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
 ```
 
 and follow the instructions recorded, e.g.
 
 ```
-# sudo semodule -i mynginx.pp
+$ sudo semodule -i mynginx.pp
 ```
 
-## Install Acquire
+And allow the HTTP daemon network access
+
+```
+$ setsebool -P httpd_can_network_connect 1
+```
+
+## Step 5 - Clone Acquire
 
 Once you have tested that Fn is accessible, then you can next install Acquire.
 
 First, download via GitHub
 
 ```
-# git clone https://github.com/chryswoods/acquire
+$ git clone https://github.com/openghg/acquire
+$ cd acquire
 ```
+
+## Step 6 - Create users for each service
 
 Make sure that you have created Oracle user accounts for each
 service you want to install, with the ability to create object storage
 buckets in your desired compartment. Also create a single bucket
 for the service, e.g.
 
-* user = acquire_identity
-* compartment = acquire_services
-* bucket = identity_bucket
+- user = acquire_identity
+- compartment = acquire_services
+- bucket = identity_bucket
 
-For each service, you will need to change into the service directory,
-e.g. `cd services/{SERVICE}`, so `cd services/identity` for the
-identity service.
+## Step 7 - Create the `tenancy.json` file
 
-Now change into the `credentials` directory and run the command
+In the `credentials` folder create a file called `tenancy.json` and fill in the tenancy ID and region for your tenancy
 
 ```
-# python3 generate_keys.py {name} {passphrase}
+{
+  "tenancy_OCID": "ocid1.tenancy.my-tenancy-id",
+  "region": "eu-frankfurt-1"
+}
 ```
 
-where `{name}` is the name of the key (e.g. `acquire_identity`) and
-`{passphrase}` is the passphrase you will use to protect this key.
-Make a note of the passphrase as you will need it later.
+## Step 8 - Setup the Fn functions
 
-This will create a public and private key used to log into the service.
-
-Log onto the OCI console and upload the public key to the user account
-on OCI that you have specified for this service. Make a record
-of the fingerprint that OCI will report.
-
-Next, create a Fn app for the service, e.g.
+To setup the Fn functions we'll use the `setup_functions.py` file in the `credentials` folder.
 
 ```
-# fn create app identity
+$ python setup_functions.py
 ```
 
-Next, edit the `upload_credentials.py` file to include the OCIDs of the
-OCI user, compartment, bucket and key fingerprint that will be used to
-store data for this service.
+### Set the hostname for the Acquire server
 
-Finally, copy into the file `../secret_key` a secret password/key
-that will be used to encrypt everything.
-
-Once you have copied in all of the details, run the script using
+The first piece of information you will be asked for is the address of the Fn server. For our
+Acquire functions we use `acquire.openghg.org`. You don't need to add http:// / https:// before
+the hostname as this will be done for you.
 
 ```
-# PYTHONPATH=../../../ python3 upload_credentials.py {NAME}.pem {PASS1} {PASS2}
+Please enter the the hostname: acquire.openghg.org
 ```
 
-where `{NAME}` is the name of the key you generated above using
-`generate_keys.py`, where `{PASS1}` is the passphrase you used to
-encrypt that key, and where `{PASS2}` is the key as written into
-`../secret_key`.
+### Enter the user OCID
 
-You should see a lot printed to the screen, showing that an encrypted config
-has been added for the service.
-
-Next, you need to deploy the service. Do this by typing
+You will then be asked for the OCID of the user for each service that you created in step 6.
 
 ```
-# cd ..
-# cd ../base_image
-# ./build_and_push.sh
-# cd -
-# fn deploy . --local
+We are now setting up the *** access *** service
+
+Enter the user OCID:
 ```
 
-Check that the service is working by navigating to
-`http://{SERVER_IP}:8080/t/{SERVICE_NAME}`
+### Key creation
 
+The script now creates an RSA keypair in the service folder. The private key will be given a passphrase that is stored by the script and later passed into Fn. We will take the public key and upload it to the Oracle Cloud Interface.
+
+### Uploading the public key
+
+Next, the script will print an RSA public key for you to paste into the `API Keys` section for the user. To upload the key go to the Oracle Cloud interface and go to `Identity` -> `Users`. There should be a user for each service (created in step 6). Click on the username and then go to `API Keys` in the `Resources` menu then `Add API Key` -> `Paste Public Key` and paste the contents of the key shown. Only copy the key itself, an example is shown below.
+
+```
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqvD9zH89Ka+aHXKBpVoA
+976c1yJ909dNbN9klu8kt2hVk7amUNA3O9CcJIC6F/gV9x7WFYDU1dVn/u31D1VZ
+LZmfhCBp9xgMhpU5k8nhfJ7hl9Ix14CKNhEshhkn44Fw7/dmFIsCbJMiyaMoC0cG
+Q7wyRBV/Y0ugqxJnbE7gHn6Y+8N4wPs5hJarLkPCs2v/ATgI5DeLUaeSBxjr1V/Z
+Tb2fwPdUdXVuywdiMt46DqkrrXPrnxAVfm+kZOZetONE/wSBZpjYB/nndBt85auU
+HR8GcPwxmRNNzjwAdnQ19kTd0X8QZx23hIQl3rnaHQfN90/RugGdEDYcOiM7Wxpc
+ua842Y8+WBsMtDKiae8/X9zktwqMQDQaYh8g0O/JvWD7eS/RLi01+6HDSB2zksM2
+PUoDdV2pPuqztaqIFV9/NR5RpffRoZm2eN1V9oIYkWBGo+HqZAtF6NogNhLxeUgq
+6StGsrxnzBEK61LB8GTBfsXSVfIiwvFOGO5tNWA2YiMVZW0oz2WjCmjsuiR6/TvU
+oF5Bh1vC7dvsMcDgUKeB2ABgPslXbbA+f1Lvrmv8fghGiIZaCGlE7S/+3eAqO/VL
+EmZ/SchUv7l764Uuo4UvD10gXw0Clmc1xxvr677Rh+Dl0G+Wgcv9SpAWzj9gkm8q
+BBKvzytyClH0yWWhQm2hYskCAwEAAQ==
+-----END PUBLIC KEY-----
+```
+
+Then press enter to move onto the next step.
+
+### Confirm the fingerprint
+
+The OCI will then give us the fingeprint of the key, this will be in the format `b0:d4:b8:58:97:ff:d9:a6:db:63:00:a5:54:89:e3:94` but yours will differ from the one shown here. Copy the fingerprint given by OCI and paste it in for checking by the script.
+
+### Passing data to Fn
+
+After you've confirmed the fingerprint the script will create a file called `secret_key` in the service directory which will be used to encrypt
+the data that is passed to Fn.
+
+> **_NOTE:_** The `secret_key` files and private keys (`<service_name>.pem`) files should never leave the server on which they are located.
+
+You should see a lot printed to the screen, showing that an encrypted config has been added for the service.
+
+You are now ready to repeat the process for the next service.
+
+## Step 9 - Deploy the services
+
+Next, you need to deploy the services. Do this changing to the `services` folder and running
+
+```
+$ bash ./deploy_all.sh
+```
+
+You should see quite a lot printed to screen as the Docker images are build and deployed.
+
+## Step 10 - Check the setup
+
+Check that the service is working by navigating to `http://{SERVER_IP}:8080/t/{SERVICE_NAME}` 
 (or, by calling `fn invoke {SERVICE} {SERVICE}-root`)

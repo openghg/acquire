@@ -5,15 +5,11 @@
 
 import pytest
 import os
-import sys
 import uuid
 
 import Acquire
 import Acquire.Stubs
 
-import requests as _original_requests
-
-from fdk.context import InvokeContext
 
 from admin.handler import create_handler
 from identity.route import route as identity_functions
@@ -215,7 +211,11 @@ def aaai_services(tmpdir_factory):
     registry_service = Service.from_data(response["service"])
     registry_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     registry_user = _login_admin("registry", "admin", password, registry_otp)
-    responses["registry"] = {"service": registry_service, "user": registry_user, "response": response}
+    responses["registry"] = {
+        "service": registry_service,
+        "user": registry_user,
+        "response": response,
+    }
 
     assert registry_service.registry_uid() == registry_service.uid()
     service_uids = [registry_service.uid()]
@@ -227,7 +227,11 @@ def aaai_services(tmpdir_factory):
     identity_service = Service.from_data(response["service"])
     identity_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     identity_user = _login_admin("identity", "admin", password, identity_otp)
-    responses["identity"] = {"service": identity_service, "user": identity_user, "response": response}
+    responses["identity"] = {
+        "service": identity_service,
+        "user": identity_user,
+        "response": response,
+    }
 
     assert identity_service.registry_uid() == registry_service.uid()
     assert identity_service.uid() not in service_uids
@@ -239,7 +243,11 @@ def aaai_services(tmpdir_factory):
     accounting_service = Service.from_data(response["service"])
     accounting_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     accounting_user = _login_admin("accounting", "admin", password, accounting_otp)
-    responses["accounting"] = {"service": accounting_service, "user": accounting_user, "response": response}
+    responses["accounting"] = {
+        "service": accounting_service,
+        "user": accounting_user,
+        "response": response,
+    }
 
     assert accounting_service.registry_uid() == registry_service.uid()
     assert accounting_service.uid() not in service_uids
@@ -252,7 +260,11 @@ def aaai_services(tmpdir_factory):
     access_service = Service.from_data(response["service"])
     access_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     access_user = _login_admin("access", "admin", password, access_otp)
-    responses["access"] = {"service": access_service, "user": access_user, "response": response}
+    responses["access"] = {
+        "service": access_service,
+        "user": access_user,
+        "response": response,
+    }
 
     assert access_service.registry_uid() == registry_service.uid()
     assert access_service.uid() not in service_uids
@@ -265,7 +277,11 @@ def aaai_services(tmpdir_factory):
     compute_service = Service.from_data(response["service"])
     compute_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     compute_user = _login_admin("compute", "admin", password, compute_otp)
-    responses["compute"] = {"service": compute_service, "user": compute_user, "response": response}
+    responses["compute"] = {
+        "service": compute_service,
+        "user": compute_user,
+        "response": response,
+    }
 
     assert compute_service.registry_uid() == registry_service.uid()
     assert compute_service.uid() not in service_uids
@@ -277,7 +293,11 @@ def aaai_services(tmpdir_factory):
     storage_service = Service.from_data(response["service"])
     storage_otp = OTP(OTP.extract_secret(response["provisioning_uri"]))
     storage_user = _login_admin("storage", "admin", password, storage_otp)
-    responses["storage"] = {"service": storage_service, "user": storage_user, "response": response}
+    responses["storage"] = {
+        "service": storage_service,
+        "user": storage_user,
+        "response": response,
+    }
 
     assert storage_service.registry_uid() == registry_service.uid()
     assert storage_service.uid() not in service_uids
@@ -310,7 +330,9 @@ def authenticated_user(aaai_services):
     username = str(uuid.uuid4())
     password = PrivateKey.random_passphrase()
 
-    result = User.register(username=username, password=password, identity_url="identity")
+    result = User.register(
+        username=username, password=password, identity_url="identity"
+    )
 
     otpsecret = result["otpsecret"]
     otp = OTP(otpsecret)

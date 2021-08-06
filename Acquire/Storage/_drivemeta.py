@@ -1,17 +1,17 @@
-
 __all__ = ["DriveMeta"]
 
 
 class DriveMeta:
     """This is a lightweight class that holds the metadata about
-       a Drive
+    a Drive
     """
+
     def __init__(self, name=None, uid=None, container=None, aclrules=None):
         """Construct a drive with a specified name and (optionally) UID.
-           'container' is the UID of the drive that contains this drive,
-           at least for the user who has accessed this drive via a path.
-           If 'container' is none, then the user is accessing this
-           drive as a top-level drive
+        'container' is the UID of the drive that contains this drive,
+        at least for the user who has accessed this drive via a path.
+        If 'container' is none, then the user is accessing this
+        drive as a top-level drive
         """
         self._name = name
         self._uid = uid
@@ -27,9 +27,9 @@ class DriveMeta:
 
         if aclrules is not None:
             from Acquire.Storage import ACLRules as _ACLRules
+
             if not isinstance(aclrules, _ACLRules):
-                raise PermissionError(
-                    "The ACL rules must be type ACLRules")
+                raise PermissionError("The ACL rules must be type ACLRules")
 
         self._aclrules = aclrules
         self._acl = None
@@ -75,10 +75,11 @@ class DriveMeta:
 
     def location(self):
         """Return a global location for this Drive. This is unique
-           for this Drive and can be used to locate
-           it from any other service.
+        for this Drive and can be used to locate
+        it from any other service.
         """
         from Acquire.Client import Location as _Location
+
         return _Location(drive_guid=self.guid())
 
     def guid(self):
@@ -87,17 +88,17 @@ class DriveMeta:
             return None
         elif self._creds is None:
             raise PermissionError(
-                "Cannot generate the GUID as we don't know "
-                "which storage service this Drive has come from!")
+                "Cannot generate the GUID as we don't know " "which storage service this Drive has come from!"
+            )
         else:
-            return "%s@%s" % (self.uid(),
-                              self._creds.storage_service().uid())
+            return "%s@%s" % (self.uid(), self._creds.storage_service().uid())
 
     def _set_credentials(self, creds):
         """Internal function used to set the credentials used
-           to access this DriveMeta
+        to access this DriveMeta
         """
         from Acquire.Client import StorageCreds as _StorageCreds
+
         if not isinstance(creds, _StorageCreds):
             raise TypeError("The creds must be type StorageCreds")
 
@@ -105,7 +106,7 @@ class DriveMeta:
 
     def _set_denied(self):
         """Call this function to remove all information that should
-           not be visible to someone who has denied access to the file
+        not be visible to someone who has denied access to the file
         """
         self._uid = None
         self._aclrules = None
@@ -113,27 +114,26 @@ class DriveMeta:
         self._container = None
         self._creds = None
         from Acquire.Storage import ACLRule as _ACLRule
+
         self._acl = _ACLRule.denied()
 
-    def resolve_acl(self, identifiers=None, upstream=None,
-                    must_resolve=None, unresolved=False,
-                    open_aclrule=None):
+    def resolve_acl(
+        self, identifiers=None, upstream=None, must_resolve=None, unresolved=False, open_aclrule=None
+    ):
         """Resolve the ACL for this file based on the passed arguments
-           (same as for ACLRules.resolve()). This returns the resolved
-           ACL, which is set as self.acl()
+        (same as for ACLRules.resolve()). This returns the resolved
+        ACL, which is set as self.acl()
         """
         if self._aclrules is None:
-            raise PermissionError(
-                "You do not have permission to resolve the ACLs for "
-                "this drive")
+            raise PermissionError("You do not have permission to resolve the ACLs for " "this drive")
 
-        self._acl = self._aclrules.resolve(identifiers=identifiers,
-                                           upstream=upstream,
-                                           must_resolve=must_resolve,
-                                           unresolved=unresolved)
+        self._acl = self._aclrules.resolve(
+            identifiers=identifiers, upstream=upstream, must_resolve=must_resolve, unresolved=unresolved
+        )
 
         if open_aclrule is not None:
             from Acquire.Client import ACLRule as _ACLRule
+
             if not isinstance(open_aclrule, _ACLRule):
                 raise TypeError("The open_aclrule must be type ACLRule")
 
@@ -151,15 +151,15 @@ class DriveMeta:
 
     def is_top_level(self):
         """Return whether or not this drive was accessed as a
-           top-level drive
+        top-level drive
         """
         return self._container is None
 
     def container_uid(self):
         """Return the UID of the drive that contains this drive, at
-           least via the access path followed by the user.
-           This returns None if the user accessed this drive as
-           a top-level drive
+        least via the access path followed by the user.
+        This returns None if the user accessed this drive as
+        a top-level drive
         """
         if self._container is None:
             return None
@@ -168,9 +168,9 @@ class DriveMeta:
 
     def container_uids(self):
         """Return the UIDs of the full hierarchy of the drives that
-           contain this drive, as this drive was accessed by the user.
-           This returns an empty list if the user accessed this drive
-           as a top-level drive
+        contain this drive, as this drive was accessed by the user.
+        This returns an empty list if the user accessed this drive
+        as a top-level drive
         """
         if self._container is None:
             return []
@@ -198,7 +198,7 @@ class DriveMeta:
     @staticmethod
     def from_data(data):
         """Return an object constructed from the passed json-deserialised
-           dictionary
+        dictionary
         """
 
         d = DriveMeta()
@@ -214,6 +214,7 @@ class DriveMeta:
 
             if "acl" in data:
                 from Acquire.Client import ACLRule as _ACLRule
+
                 d._acl = _ACLRule.from_data(data["acl"])
 
         return d

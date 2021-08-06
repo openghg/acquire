@@ -10,3 +10,5 @@ sys.path.insert(0, os.path.abspath("."))
 
 # load all of the common fixtures used by the mocked tests
 pytest_plugins = ["services.fixtures.mocked_services"]
+
+# os.environ["ACQUIRE_HOST"] = "acquire_testing"

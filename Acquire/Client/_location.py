@@ -1,22 +1,22 @@
-
 __all__ = ["Location"]
 
 
 class Location:
     """This class holds a globally-resolvable location for a
-       file or Drive.
+    file or Drive.
     """
+
     def __init__(self, drive_guid=None, filename=None, version=None):
         """Construct an Location. This uses the GUID of the
-           drive to identify the drive, and then (optionally) the
-           name of the file in the drive, and then the specific
-           version.
+        drive to identify the drive, and then (optionally) the
+        name of the file in the drive, and then the specific
+        version.
 
-           The drive GUID has the format {service_uid}/{drive_uid}
+        The drive GUID has the format {service_uid}/{drive_uid}
 
-           If the filename is not supplied, then this locates
-           the drive itself. If a version is not supplied, then this
-           locates the latest version of the file
+        If the filename is not supplied, then this locates
+        the drive itself. If a version is not supplied, then this
+        locates the latest version of the file
         """
         self._drive_guid = drive_guid
         self._encoded_filename = None
@@ -28,8 +28,8 @@ class Location:
             self._version = version
 
             if self._filename is not None:
-                from Acquire.ObjectStore import string_to_encoded \
-                    as _string_to_encoded
+                from Acquire.ObjectStore import string_to_encoded as _string_to_encoded
+
                 self._encoded_filename = _string_to_encoded(self._filename)
             else:
                 self._encoded_filename = None
@@ -43,22 +43,19 @@ class Location:
         elif self.is_drive():
             return "acquire_drive://%s" % self._drive_guid
         elif self.specifies_version():
-            return "acquire_file://%s/%s/%s" % (self._drive_guid,
-                                                self._encoded_filename,
-                                                self._version)
+            return "acquire_file://%s/%s/%s" % (self._drive_guid, self._encoded_filename, self._version)
         else:
-            return "acquire_file://%s/%s" % (self._drive_guid,
-                                             self._encoded_filename)
+            return "acquire_file://%s/%s" % (self._drive_guid, self._encoded_filename)
 
     def fingerprint(self):
         """Return a fingerprint that can be used to show that the
-           user has authorised something to do with this location
+        user has authorised something to do with this location
         """
         return str(self)
 
     def to_string(self):
         """Return a safe string that completely describes this
-           location
+        location
         """
         return str(self)
 
@@ -67,8 +64,7 @@ class Location:
         """Return an Location constructed from the passed string"""
         if s.startswith("acquire_file://"):
             parts = s.split("/")
-            from Acquire.ObjectStore import encoded_to_string \
-                as _encoded_to_string
+            from Acquire.ObjectStore import encoded_to_string as _encoded_to_string
 
             try:
                 drive_guid = parts[-2]
@@ -79,8 +75,7 @@ class Location:
                 filename = _encoded_to_string(parts[-3])
                 version = "/".join([parts[-2], parts[-1]])
 
-            return Location(drive_guid=drive_guid, filename=filename,
-                            version=version)
+            return Location(drive_guid=drive_guid, filename=filename, version=version)
 
         elif s.startswith("acquire_drive://"):
             parts = s.split("/")
@@ -133,13 +128,13 @@ class Location:
 
     def version(self):
         """Return the version of the file (if this is a file and
-           the version has been specified)
+        the version has been specified)
         """
         return self._version
 
     def service_uid(self):
         """Return the UID of the service that holds the File/Drive
-           behind this location
+        behind this location
         """
         if self.is_null():
             return None
@@ -148,19 +143,18 @@ class Location:
 
     def service(self):
         """Return the service that holds the File/Drive behind this
-           location
+        location
         """
         if self.is_null():
             return None
 
-        from Acquire.Service import get_trusted_service \
-            as _get_trusted_service
+        from Acquire.Service import get_trusted_service as _get_trusted_service
 
         return _get_trusted_service(service_uid=self.service_uid())
 
     def service_url(self):
         """Return the URL of the service that holds the File/Drive
-           behind this location
+        behind this location
         """
         if self.is_null():
             return None
@@ -170,7 +164,7 @@ class Location:
     @staticmethod
     def from_data(data):
         """Return an Location constructed from the json-deserialised
-           dictionary
+        dictionary
         """
         if data is None or len(data) == 0:
             return Location()
@@ -183,8 +177,8 @@ class Location:
         except:
             return iden
 
-        from Acquire.ObjectStore import encoded_to_string \
-            as _encoded_to_string
+        from Acquire.ObjectStore import encoded_to_string as _encoded_to_string
+
         iden._filename = _encoded_to_string(iden._encoded_filename)
 
         try:

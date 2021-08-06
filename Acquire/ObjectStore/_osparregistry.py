@@ -1,4 +1,3 @@
-
 __all__ = ["OSParRegistry"]
 
 _registry_key = "registry/pars"
@@ -6,35 +5,34 @@ _registry_key = "registry/pars"
 
 class OSParRegistry:
     """This is a OSPar registry that is used
-       to maintain a registry of OSPars that have been created
-       on an ObjectStore.
+    to maintain a registry of OSPars that have been created
+    on an ObjectStore.
     """
+
     @staticmethod
     def register(par, url_checksum, details_function, cleanup_function=None):
         """Register the passed PAR, passing in the checksum of
-           the PAR's secret URL (so we can verify the close),
-           and optionally supplying a cleanup_function that is
-           called when the PAR is closed. The passed 'details_function'
-           should be used to extract the object-store driver-specific
-           details from the PAR and convert them into a dictionary.
-           The signature should be;
+        the PAR's secret URL (so we can verify the close),
+        and optionally supplying a cleanup_function that is
+        called when the PAR is closed. The passed 'details_function'
+        should be used to extract the object-store driver-specific
+        details from the PAR and convert them into a dictionary.
+        The signature should be;
 
-           driver_details = details_function(par)
+        driver_details = details_function(par)
         """
         from Acquire.Service import is_running_service as _is_running_service
 
         if not _is_running_service():
             return
 
-        from Acquire.Service import get_service_account_bucket \
-            as _get_service_account_bucket
+        from Acquire.Service import get_service_account_bucket as _get_service_account_bucket
 
         from Acquire.ObjectStore import OSPar as _OSPar
 
         from Acquire.ObjectStore import ObjectStore as _ObjectStore
         from Acquire.ObjectStore import Function as _Function
-        from Acquire.ObjectStore import datetime_to_string \
-            as _datetime_to_string
+        from Acquire.ObjectStore import datetime_to_string as _datetime_to_string
 
         if par is None:
             return
@@ -74,14 +72,14 @@ class OSParRegistry:
     @staticmethod
     def get(par_uid, details_function, url_checksum=None):
         """Return the PAR that matches the passed PAR_UID.
-           If 'url_checksum' is supplied then this verifies that
-           the checksum of the secret URL is correct.
+        If 'url_checksum' is supplied then this verifies that
+        the checksum of the secret URL is correct.
 
-           This returns the PAR with a completed 'driver_details'.
-           The 'driver_details' is created from the dictionary
-           of data saved with the PAR. The signature should be;
+        This returns the PAR with a completed 'driver_details'.
+        The 'driver_details' is created from the dictionary
+        of data saved with the PAR. The signature should be;
 
-           driver_details = details_function(data)
+        driver_details = details_function(data)
         """
         if par_uid is None or len(par_uid) == 0:
             return
@@ -91,21 +89,18 @@ class OSParRegistry:
         if not _is_running_service():
             return
 
-        from Acquire.Service import get_service_account_bucket \
-            as _get_service_account_bucket
+        from Acquire.Service import get_service_account_bucket as _get_service_account_bucket
 
         from Acquire.ObjectStore import OSPar as _OSPar
 
         from Acquire.ObjectStore import ObjectStore as _ObjectStore
-        from Acquire.ObjectStore import string_to_datetime \
-            as _string_to_datetime
+        from Acquire.ObjectStore import string_to_datetime as _string_to_datetime
 
         key = "%s/uid/%s" % (_registry_key, par_uid)
 
         bucket = _get_service_account_bucket()
 
-        objs = _ObjectStore.get_all_objects_from_json(bucket=bucket,
-                                                      prefix=key)
+        objs = _ObjectStore.get_all_objects_from_json(bucket=bucket, prefix=key)
 
         data = None
 
@@ -120,8 +115,8 @@ class OSParRegistry:
 
         if data is None:
             from Acquire.ObjectStore import ObjectStoreError
-            raise ObjectStoreError(
-                "There is matching PAR available to close...")
+
+            raise ObjectStoreError("There is matching PAR available to close...")
 
         par = _OSPar.from_data(data["par"])
 
@@ -137,22 +132,20 @@ class OSParRegistry:
     @staticmethod
     def close(par):
         """Close the passed PAR. This will remove the registration
-           for the PAR and will also call the associated
-           cleanup_function (if any)
+        for the PAR and will also call the associated
+        cleanup_function (if any)
         """
         from Acquire.Service import is_running_service as _is_running_service
 
         if not _is_running_service():
             return
 
-        from Acquire.Service import get_service_account_bucket \
-            as _get_service_account_bucket
+        from Acquire.Service import get_service_account_bucket as _get_service_account_bucket
 
         from Acquire.ObjectStore import OSPar as _OSPar
 
         from Acquire.ObjectStore import ObjectStore as _ObjectStore
-        from Acquire.ObjectStore import datetime_to_string \
-            as _datetime_to_string
+        from Acquire.ObjectStore import datetime_to_string as _datetime_to_string
         from Acquire.ObjectStore import Function as _Function
 
         if par is None:

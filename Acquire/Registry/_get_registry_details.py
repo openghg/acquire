@@ -1,3 +1,4 @@
+from Acquire.Service import get_service_url
 
 __all__ = ["get_registry_details", "update_registry_keys_and_certs"]
 
@@ -5,29 +6,31 @@ _testing_registry = {
     "canonical_url": "registry",
     "uid": "Z9-Z9",
     "public_key": None,
-    "public_certificate": None}
+    "public_certificate": None,
+}
+
+registry_url = get_service_url(service="registry", https=False)
 
 _acquire_registry = {
-    "canonical_url": "https://fn.acquire-aaai.com/t/registry",
+    "canonical_url": registry_url,
     "uid": "a0-a0",
     "public_key": None,
-    "public_certificate": None}
+    "public_certificate": None,
+}
 
-_registries = {_testing_registry["uid"]: _testing_registry,
-               _acquire_registry["uid"]: _acquire_registry}
+_registries = {_testing_registry["uid"]: _testing_registry, _acquire_registry["uid"]: _acquire_registry}
 
 
-def update_registry_keys_and_certs(registry_uid, public_key,
-                                   public_certificate):
+def update_registry_keys_and_certs(registry_uid, public_key, public_certificate):
     """This function is called to update the registry details stored
-       globally with those in the newly-created registry-service. This
-       function should only be called by registry services after
-       construction
+    globally with those in the newly-created registry-service. This
+    function should only be called by registry services after
+    construction
     """
     if registry_uid not in _registries:
         raise PermissionError(
-            "Cannot update registry details as this is not one of the "
-            "centrally approved registries!")
+            "Cannot update registry details as this is not one of the " "centrally approved registries!"
+        )
 
     from Acquire.Crypto import PublicKey as _PublicKey
 
@@ -47,9 +50,9 @@ def update_registry_keys_and_certs(registry_uid, public_key,
 
 def get_registry_details(registry_uid):
     """Return the details for the registry with specified UID.
-       Note that this will only return details for the approved
-       and centrally-registered registries. This returns
-       a dictionary with key registry details.
+    Note that this will only return details for the approved
+    and centrally-registered registries. This returns
+    a dictionary with key registry details.
     """
     try:
         registry = _registries[registry_uid]
@@ -59,8 +62,8 @@ def get_registry_details(registry_uid):
     if registry["public_key"] is None:
         try:
             from importlib import import_module as _import_module
-            _keys = _import_module("._keys_%s" % registry_uid,
-                                   package="Acquire.Registry")
+
+            _keys = _import_module("._keys_%s" % registry_uid, package="Acquire.Registry")
             registry["public_key"] = _keys.public_key
             registry["public_certificate"] = _keys.public_certificate
         except:

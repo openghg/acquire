@@ -19,5 +19,4 @@ Registry = _lazy_import.lazy_module("Acquire.Registry")
 
 __version__ = "0.1.2"
 
-__all__ = ["Access", "Accounting", "Client", "Crypto",
-           "Identity", "ObjectStore", "Registry", "Service"]
+__all__ = ["Access", "Accounting", "Client", "Crypto", "Identity", "ObjectStore", "Registry", "Service"]

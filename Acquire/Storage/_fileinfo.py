@@ -10,7 +10,15 @@ _file_root = "storage/file"
 class VersionInfo:
     """This class holds specific info about a version of a file"""
 
-    def __init__(self, filesize=None, checksum=None, aclrules=None, is_chunked=False, compression=None, identifiers=None):
+    def __init__(
+        self,
+        filesize=None,
+        checksum=None,
+        aclrules=None,
+        is_chunked=False,
+        compression=None,
+        identifiers=None,
+    ):
         """Construct the version of the file that has the passed
         size and checksum, was uploaded by the specified user,
         and that has the specified aclrules, and whether or not
@@ -29,8 +37,9 @@ class VersionInfo:
                 user_guid = None
 
             if user_guid is None:
-                raise PermissionError("You must specify the user_guid of the user who is " "uploading this version of the file!")
-
+                raise PermissionError(
+                    "You must specify the user_guid of the user who is " "uploading this version of the file!"
+                )
 
             if aclrules is None:
                 from Acquire.Identity import ACLRules as _ACLRules
@@ -61,7 +70,9 @@ class VersionInfo:
                 user_guid = None
 
             if user_guid is None:
-                raise PermissionError("You must specify the user_guid of the user who is " "uploading this version of the file!")
+                raise PermissionError(
+                    "You must specify the user_guid of the user who is " "uploading this version of the file!"
+                )
 
             if aclrules is None:
                 from Acquire.Identity import ACLRules as _ACLRules
@@ -315,7 +326,14 @@ class FileInfo:
     """
 
     def __init__(
-        self, drive_uid=None, filehandle=None, filename=None, aclrules=None, is_chunked=False, identifiers=None, upstream=None
+        self,
+        drive_uid=None,
+        filehandle=None,
+        filename=None,
+        aclrules=None,
+        is_chunked=False,
+        identifiers=None,
+        upstream=None,
     ):
         """Construct from a passed filehandle of a file that will be
         uploaded
@@ -428,7 +446,10 @@ class FileInfo:
             return _FileMeta()
 
         return FileInfo._get_filemeta(
-            filename=self._filename, version=self._version_info(version), identifiers=self._identifiers, upstream=self._upstream
+            filename=self._filename,
+            version=self._version_info(version),
+            identifiers=self._identifiers,
+            upstream=self._upstream,
         )
 
     def _version_info(self, version=None):
@@ -562,7 +583,9 @@ class FileInfo:
         )
 
         # save the fileinfo itself
-        _ObjectStore.set_object_from_json(bucket=metadata_bucket, key=self._fileinfo_key(), data=self.to_data())
+        _ObjectStore.set_object_from_json(
+            bucket=metadata_bucket, key=self._fileinfo_key(), data=self.to_data()
+        )
 
     @staticmethod
     def list_versions(drive, filename, identifiers=None, upstream=None, include_metadata=False):
@@ -592,7 +615,9 @@ class FileInfo:
 
             for data in objs.values():
                 version = VersionInfo.from_data(data)
-                filemeta = FileInfo._get_filemeta(filename=filename, version=version, identifiers=identifiers, upstream=upstream)
+                filemeta = FileInfo._get_filemeta(
+                    filename=filename, version=version, identifiers=identifiers, upstream=upstream
+                )
 
                 if not filemeta.acl().denied_all():
                     versions.append(filemeta)

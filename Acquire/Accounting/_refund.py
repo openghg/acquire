@@ -1,24 +1,24 @@
-
 __all__ = ["Refund"]
 
 
 class Refund:
     """This class holds the refund for a transaction. This is sent
-       by the credited account or other authorised party to refund a
-       transaction. Refunds must succeed, so potentially they can
-       allow accounts to breach overdraft limits etc.
+    by the credited account or other authorised party to refund a
+    transaction. Refunds must succeed, so potentially they can
+    allow accounts to breach overdraft limits etc.
     """
+
     def __init__(self, credit_note=None, authorisation=None):
         """Create a refund for the transaction that resulted in the passed
-           credit note. Specify the authorisation of the refund. Note
-           that transactions can only be refunded in full. If you want
-           to give a partial refund then this is better handled as
-           a new transaction from the credited to debited accounts.
+        credit note. Specify the authorisation of the refund. Note
+        that transactions can only be refunded in full. If you want
+        to give a partial refund then this is better handled as
+        a new transaction from the credited to debited accounts.
 
-           Note also that you can only refund completed transactions.
-           If you need to refund a provisional transaction then receipt
-           it first. (Obvs it is easier to just receipt with 0 rather
-           than receipt and then refund...)
+        Note also that you can only refund completed transactions.
+        If you need to refund a provisional transaction then receipt
+        it first. (Obvs it is easier to just receipt with 0 rather
+        than receipt and then refund...)
         """
         if credit_note is None:
             self._credit_note = None
@@ -42,8 +42,7 @@ class Refund:
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self._credit_note == other._credit_note and \
-                   self._authorisation == other._authorisation
+            return self._credit_note == other._credit_note and self._authorisation == other._authorisation
         else:
             return False
 
@@ -53,38 +52,39 @@ class Refund:
     def is_null(self):
         """Return whether or not this Refund is null
 
-           Returns:
-                bool: True if refund is null, else False
+        Returns:
+             bool: True if refund is null, else False
         """
         return self._credit_note is None
 
     def credit_note(self):
         """Return the credit note that this is refunding
 
-           Returns:
-                CreditNote: CreditNote related to this Refund
+        Returns:
+             CreditNote: CreditNote related to this Refund
         """
         if self.is_null():
             from Acquire.Accounting import CreditNote as _CreditNote
+
             return _CreditNote()
         else:
             return self._credit_note
 
     def transaction_uid(self):
         """Return the UID of the transaction for which this
-           is the refund. The transaction UID is the same as the UID
-           for the original debit note
+        is the refund. The transaction UID is the same as the UID
+        for the original debit note
 
-           Returns:
-                str: UID of transaction this is refunding
+        Returns:
+             str: UID of transaction this is refunding
         """
         return self.debit_note_uid()
 
     def debit_note_uid(self):
         """Return the UID of the debit note that this is refunding
 
-           Returns:
-                str: UID of debit note this is refunding
+        Returns:
+             str: UID of debit note this is refunding
         """
         if self.is_null():
             return None
@@ -93,10 +93,10 @@ class Refund:
 
     def debit_account_uid(self):
         """Return the UID of the account from which this refund will
-           return value
+        return value
 
-           Returns:
-                str: UID of account to return value to
+        Returns:
+             str: UID of account to return value to
         """
         if self.is_null():
             return None
@@ -105,10 +105,10 @@ class Refund:
 
     def credit_account_uid(self):
         """Return the UID of the account from which this refund will be
-           drawn
+        drawn
 
-           Returns:
-                str: UID of account to draw refund from
+        Returns:
+             str: UID of account to draw refund from
         """
         if self.is_null():
             return None
@@ -117,30 +117,29 @@ class Refund:
 
     def transaction(self):
         """Return a transaction that corresponds to the real transfer
-           of value back from the credit to debit accounts (remembering
-           that the original debit account will be the new credit account,
-           and the original credit account will be the new debit account).
+        of value back from the credit to debit accounts (remembering
+        that the original debit account will be the new credit account,
+        and the original credit account will be the new debit account).
 
 
-           Returns:
-                Transaction: Transaction related to this refund
+        Returns:
+             Transaction: Transaction related to this refund
         """
         from Acquire.Accounting import Transaction as _Transaction
 
         if self.is_null():
             return _Transaction()
         else:
-            return _Transaction(self.value(),
-                                "Refund for transaction %s"
-                                % self.transaction_uid())
+            return _Transaction(self.value(), "Refund for transaction %s" % self.transaction_uid())
 
     def value(self):
         """Return the value of the refund
 
-           Decimal: Value of this refund
+        Decimal: Value of this refund
         """
         if self.is_null():
             from Acquire.Accounting import create_decimal as _create_decimal
+
             return _create_decimal(0)
         else:
             return self._credit_note.value()
@@ -148,16 +147,16 @@ class Refund:
     def authorisation(self):
         """Return the authorisation for the refund
 
-           Authorisation: Authorisation for this refund
+        Authorisation: Authorisation for this refund
         """
         return self._authorisation
 
     def to_data(self):
         """Return the data for this object as a dictionary that can be
-           serialised to JSON
+        serialised to JSON
 
-           Returns:
-                dict: Dictionary to serialise to JSON
+        Returns:
+             dict: Dictionary to serialise to JSON
 
         """
         data = {}
@@ -172,18 +171,19 @@ class Refund:
     def from_data(data):
         """Return a Refund from the passed JSON-decoded dictionary
 
-           Args:
-                dict: JSON-decoded dictionary
-           Returns:
-                Refund: Refund object created from JSON
+        Args:
+             dict: JSON-decoded dictionary
+        Returns:
+             Refund: Refund object created from JSON
 
 
         """
         r = Refund()
 
-        if (data and len(data) > 0):
+        if data and len(data) > 0:
             from Acquire.Accounting import CreditNote as _CreditNote
             from Acquire.Identity import Authorisation as _Authorisation
+
             r._credit_note = _CreditNote.from_data(data["credit_note"])
             r._authorisation = _Authorisation.from_data(data["authorisation"])
 
@@ -192,15 +192,15 @@ class Refund:
     @staticmethod
     def create(credit_notes, authorisation):
         """Construct a series of refunds from the passed credit notes,
-           each of which is authorised using the passed authorisation.
-           This will refund all of the transactions passed in full
+        each of which is authorised using the passed authorisation.
+        This will refund all of the transactions passed in full
 
-           Args:
-                credit_notes (list): Credit notes to process
-                authorisation (Authorisatin): Authorisation for refunds
+        Args:
+             credit_notes (list): Credit notes to process
+             authorisation (Authorisatin): Authorisation for refunds
 
-           Returns:
-                Refund or list[Refunds]: Processed refunds for credit notes
+        Returns:
+             Refund or list[Refunds]: Processed refunds for credit notes
 
         """
         try:

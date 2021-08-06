@@ -1,4 +1,3 @@
-
 # use a variable so we can monkey-patch while testing
 _input = input
 
@@ -7,31 +6,29 @@ __all__ = ["Wallet"]
 
 def _get_wallet_dir():
     """Function that can be mocked in testing to ensure we don't
-       mess with the user's main wallet
+    mess with the user's main wallet
     """
     import os as _os
+
     home = _os.path.expanduser("~")
     return "%s/.acquire_wallet" % home
 
 
 def _get_wallet_password(confirm_password=False):
     """Function that can be mocked in testing to ensure we don't
-       mess with the user's main wallet
+    mess with the user's main wallet
     """
     import getpass as _getpass
+
     if confirm_password:
-        password = _getpass.getpass(
-                    prompt="Please enter a password to encrypt your wallet: ")
+        password = _getpass.getpass(prompt="Please enter a password to encrypt your wallet: ")
     else:
-        password = _getpass.getpass(
-                    prompt="Please enter the password to decrypt your wallet: "
-        )
+        password = _getpass.getpass(prompt="Please enter the password to decrypt your wallet: ")
 
     if not confirm_password:
         return password
 
-    password2 = _getpass.getpass(
-                    prompt="Please confirm the password: ")
+    password2 = _getpass.getpass(prompt="Please confirm the password: ")
 
     if password != password2:
         _output("The passwords don't match. Please try again.")
@@ -42,7 +39,7 @@ def _get_wallet_password(confirm_password=False):
 
 def _output(s, end=None):
     """Simple output function that can be replaced at testing
-       to silence the wallet
+    to silence the wallet
     """
     if end is None:
         print(s)
@@ -54,6 +51,7 @@ def _flush_output():
     """Flush STDOUT"""
     try:
         import sys as _sys
+
         _sys.stdout.flush()
     except:
         pass
@@ -61,9 +59,10 @@ def _flush_output():
 
 def _read_json(filename):
     """Return a json-decoded dictionary from the data written
-       to 'filename'
+    to 'filename'
     """
     import json as _json
+
     with open(filename, "rb") as FILE:
         s = FILE.read().decode("utf-8")
 
@@ -73,6 +72,7 @@ def _read_json(filename):
 def _write_json(data, filename):
     """Write the passed json-encodable dictionary to 'filename'"""
     import json as _json
+
     s = _json.dumps(data)
     with open(filename, "wb") as FILE:
         FILE.write(s.encode("utf-8"))
@@ -81,6 +81,7 @@ def _write_json(data, filename):
 def _read_service(filename):
     """Read and return the service written to 'filename'"""
     from Acquire.Client import Service as _Service
+
     return _Service.from_data(_read_json(filename))
 
 
@@ -109,30 +110,28 @@ def _could_match(userinfo, username, password):
 
 class Wallet:
     """This class holds a wallet that can be used to simplify
-       sending passwords and one-time-password (OTP) codes
-       to an acquire identity service.
+    sending passwords and one-time-password (OTP) codes
+    to an acquire identity service.
 
-       This holds a wallet of passwords and (optionally)
-       OTP secrets that are encrypted using a local keypair
-       that is unlocked by a password supplied by the user locally.
+    This holds a wallet of passwords and (optionally)
+    OTP secrets that are encrypted using a local keypair
+    that is unlocked by a password supplied by the user locally.
 
-       By default this will create the wallet in your home
-       directory ($HOME/.acquire_wallet). If you want the wallet
-       to be saved in a different directory, specify that
-       as "wallet_dir".
+    By default this will create the wallet in your home
+    directory ($HOME/.acquire_wallet). If you want the wallet
+    to be saved in a different directory, specify that
+    as "wallet_dir".
     """
+
     def __init__(self):
         """Construct a wallet to hold all user credentials"""
-        from Acquire.Service import is_running_service \
-            as _is_running_service
+        from Acquire.Service import is_running_service as _is_running_service
 
         if _is_running_service():
-            from Acquire.Service import get_this_service \
-                as _get_this_service
+            from Acquire.Service import get_this_service as _get_this_service
+
             service = _get_this_service(need_private_access=False)
-            raise PermissionError(
-                "You cannot open a Wallet on a running Service (%s)" %
-                service)
+            raise PermissionError("You cannot open a Wallet on a running Service (%s)" % service)
 
         self._wallet_key = None
         self._service_info = {}
@@ -153,6 +152,7 @@ class Wallet:
         password = _get_wallet_password(confirm_password=True)
 
         from Acquire.Client import PrivateKey as _PrivateKey
+
         key = _PrivateKey(name="wallet_key")
 
         bytes = key.bytes(password)
@@ -164,7 +164,7 @@ class Wallet:
 
     def _get_wallet_key(self):
         """Return the private key used to encrypt everything in the wallet.
-           This will ask for the users password
+        This will ask for the users password
         """
         if self._wallet_key:
             return self._wallet_key
@@ -208,28 +208,30 @@ class Wallet:
     @staticmethod
     def _get_service_dir(service_uid):
         """Return (creating if necessary) the directory that will store
-           all wallet info for the service with specified service uid
+        all wallet info for the service with specified service uid
         """
-        assert(service_uid is not None)
+        assert service_uid is not None
 
         service_dir = "%s/%s" % (_get_wallet_dir(), service_uid)
 
         import os as _os
+
         if not _os.path.exists(service_dir):
             _os.makedirs(service_dir, mode=0o700)
 
         if not _os.path.isdir(service_dir):
             raise PermissionError(
                 "Unable to get the directory to store wallet data for the "
-                "service with UID '%s'" % service_uid)
+                "service with UID '%s'" % service_uid
+            )
 
         return service_dir
 
     def _get_userinfo_filename(self, user_uid, service_uid):
         """Return the filename for the passed user_uid logging into the
-           passed identity service with service_uid
+        passed identity service with service_uid
         """
-        assert(user_uid is not None)
+        assert user_uid is not None
 
         service_dir = Wallet._get_service_dir(service_uid)
 
@@ -237,18 +239,20 @@ class Wallet:
 
     def _set_userinfo(self, userinfo, user_uid, service_uid):
         """Save the userfile for the passed user_uid logging into the
-           passed identity service with service_uid
+        passed identity service with service_uid
         """
         from Acquire.ObjectStore import bytes_to_string as _bytes_to_string
         import json as _json
-        filename = self._get_userinfo_filename(user_uid=user_uid,
-                                               service_uid=service_uid)
+
+        filename = self._get_userinfo_filename(user_uid=user_uid, service_uid=service_uid)
         key = self._get_wallet_key().public_key()
         data = _bytes_to_string(key.encrypt(_json.dumps(userinfo)))
 
-        userinfo = {"username": userinfo["username"],
-                    "user_uid": user_uid,
-                    "data": data}
+        userinfo = {
+            "username": userinfo["username"],
+            "user_uid": user_uid,
+            "data": data,
+        }
 
         _write_json(data=userinfo, filename=filename)
 
@@ -266,16 +270,15 @@ class Wallet:
 
     def _get_userinfo(self, user_uid, service_uid):
         """Read all info for the passed user at the identity service
-           with UID service_uid
+        with UID service_uid
         """
-        filename = self._get_userinfo_filename(user_uid=user_uid,
-                                               service_uid=service_uid)
+        filename = self._get_userinfo_filename(user_uid=user_uid, service_uid=service_uid)
         userinfo = _read_json(filename=filename)
         return self._unlock_userinfo(userinfo)
 
     def _find_userinfo(self, username=None, password=None, service_uid=None):
         """Function to find a user_info automatically, of if that fails,
-           to ask the user
+        to ask the user
         """
         service_dir = Wallet._get_service_dir(service_uid)
 
@@ -309,19 +312,18 @@ class Wallet:
 
             return userinfo
 
-        _output("Please choose the account by typing in its number, "
-                "or type a new username if you want a different account.")
+        _output(
+            "Please choose the account by typing in its number, "
+            "or type a new username if you want a different account."
+        )
 
         for (i, (username, userinfo)) in enumerate(userinfos):
-            _output("[%d] %s {%s}" % (i+1, username, userinfo["user_uid"]))
+            _output("[%d] %s {%s}" % (i + 1, username, userinfo["user_uid"]))
 
         max_tries = 5
 
         for i in range(0, max_tries):
-            reply = _input(
-                    "\nMake your selection (1 to %d) " %
-                    (len(userinfos))
-                )
+            reply = _input("\nMake your selection (1 to %d) " % (len(userinfos)))
 
             try:
                 idx = int(reply) - 1
@@ -336,7 +338,7 @@ class Wallet:
             else:
                 return self._unlock_userinfo(userinfos[idx][1])
 
-            if i < max_tries-1:
+            if i < max_tries - 1:
                 _output("Try again...")
 
         userinfo = {}
@@ -348,14 +350,14 @@ class Wallet:
 
     def _get_user_password(self, userinfo):
         """Get the user password for the passed user on the passed
-           identity_url
+        identity_url
         """
         if "password" in userinfo:
             return userinfo["password"]
         else:
             import getpass as _getpass
-            password = _getpass.getpass(
-                            prompt="Please enter the login password: ")
+
+            password = _getpass.getpass(prompt="Please enter the login password: ")
             userinfo["password"] = password
             return password
 
@@ -363,16 +365,18 @@ class Wallet:
         """Get the OTP code"""
         if "otpsecret" in userinfo:
             from Acquire.Client import OTP as _OTP
+
             otp = _OTP(userinfo["otpsecret"])
             return otp.generate()
         else:
             import getpass as _getpass
-            return _getpass.getpass(
-                        prompt="Please enter the one-time-password code: ")
+
+            return _getpass.getpass(prompt="Please enter the one-time-password code: ")
 
     def get_services(self):
         """Return all of the trusted services known to this wallet"""
         import glob as _glob
+
         service_files = _glob.glob("%s/*/service_*.json" % self._wallet_dir)
 
         services = []
@@ -384,16 +388,15 @@ class Wallet:
 
     def _get_service_from_registry(self, service_url=None, service_uid=None):
         """Return the service fetched from the registry"""
-        from Acquire.Registry import get_trusted_registry_service \
-            as _get_trusted_registry_service
-        from Acquire.ObjectStore import string_to_safestring \
-            as _string_to_safestring
+        from Acquire.Registry import (
+            get_trusted_registry_service as _get_trusted_registry_service,
+        )
+        from Acquire.ObjectStore import string_to_safestring as _string_to_safestring
 
         _output("Connecting to registry...")
         _flush_output()
 
-        registry = _get_trusted_registry_service(service_uid=service_uid,
-                                                 service_url=service_url)
+        registry = _get_trusted_registry_service(service_uid=service_uid, service_url=service_url)
 
         _output("...connected to registry %s" % registry)
         _flush_output()
@@ -401,7 +404,9 @@ class Wallet:
         # ensure we cache this registry...
         service_dir = Wallet._get_service_dir(registry.uid())
         registry_file = "%s/service_%s.json" % (
-            service_dir, _string_to_safestring(registry.canonical_url()))
+            service_dir,
+            _string_to_safestring(registry.canonical_url()),
+        )
         _write_service(service=registry, filename=registry_file)
 
         if service_url is not None:
@@ -411,8 +416,7 @@ class Wallet:
             _output("Securely fetching keys for UID %s..." % service_uid)
             _flush_output()
 
-        service = registry.get_service(service_url=service_url,
-                                       service_uid=service_uid)
+        service = registry.get_service(service_url=service_url, service_uid=service_uid)
 
         _output("...success.\nFetched %s" % service)
         _flush_output()
@@ -421,33 +425,39 @@ class Wallet:
 
     def clear_cache(self):
         """Clear the in-memory cache of services"""
-        from Acquire.Service import clear_services_cache \
-            as _clear_services_cache
+        from Acquire.Service import clear_services_cache as _clear_services_cache
+
         _clear_services_cache()
 
     def add_service(self, service):
         """Add the passed service to this wallet"""
         from Acquire.Service import Service as _Service
-        from Acquire.ObjectStore import string_to_safestring \
-            as _string_to_safestring
+        from Acquire.ObjectStore import string_to_safestring as _string_to_safestring
 
         s = _Service.resolve(service, fetch=True)
         service = s["service"]
 
         service_dir = Wallet._get_service_dir(service.uid())
         service_file = "%s/service_%s.json" % (
-            service_dir, _string_to_safestring(service.canonical_url()))
+            service_dir,
+            _string_to_safestring(service.canonical_url()),
+        )
         _write_service(service=service, filename=service_file)
 
-    def get_service(self, service=None, service_url=None, service_uid=None,
-                    service_type=None, autofetch=True):
+    def get_service(
+        self,
+        service=None,
+        service_url=None,
+        service_uid=None,
+        service_type=None,
+        autofetch=True,
+    ):
         """Return the service at either 'service_url', or that
-           has UID 'service_uid'. This will return the
-           cached service if it exists, or will add a new service if
-           we are able to validate it from a trusted registry
+        has UID 'service_uid'. This will return the
+        cached service if it exists, or will add a new service if
+        we are able to validate it from a trusted registry
         """
-        from Acquire.ObjectStore import string_to_safestring \
-            as _string_to_safestring
+        from Acquire.ObjectStore import string_to_safestring as _string_to_safestring
         from Acquire.Service import Service as _Service
 
         if service is not None:
@@ -465,8 +475,7 @@ class Wallet:
 
         if service_url is None:
             if service_uid is None:
-                raise PermissionError(
-                    "You need to specify one of service_uid or service_url")
+                raise PermissionError("You need to specify one of service_uid or service_url")
 
             # we need to look up the name...
             service_dir = Wallet._get_service_dir(service_uid)
@@ -479,12 +488,12 @@ class Wallet:
                     break
         else:
             from Acquire.Service import Service as _Service
-            service_url = _Service.get_canonical_url(service_url,
-                                                     service_type=service_type)
 
-            service_files = _glob.glob("%s/*/service_%s.json" % (
-                                       self._wallet_dir,
-                                       _string_to_safestring(service_url)))
+            service_url = _Service.get_canonical_url(service_url, service_type=service_type)
+
+            service_files = _glob.glob(
+                "%s/*/service_%s.json" % (self._wallet_dir, _string_to_safestring(service_url))
+            )
 
             for service_file in service_files:
                 s = _read_service(service_file)
@@ -497,12 +506,11 @@ class Wallet:
         if service is None:
             if not autofetch:
                 from Acquire.Service import ServiceError
-                raise ServiceError("No service at %s:%s" %
-                                   (service_url, service_uid))
+
+                raise ServiceError("No service at %s:%s" % (service_url, service_uid))
 
             # we need to look this service up from the registry
-            service = self._get_service_from_registry(service_url=service_url,
-                                                      service_uid=service_uid)
+            service = self._get_service_from_registry(service_url=service_url, service_uid=service_uid)
             must_write = True
 
         # check if the keys need rotating - if they do, load up
@@ -511,21 +519,19 @@ class Wallet:
             try:
                 service.refresh_keys()
                 must_write = True
-            except:
+            except ServiceError:
                 # something went wrong refreshing keys - go back to the
                 # registry...
                 _output("Something went wrong refreshing keys...")
                 _output("Refreshing service from the registry.")
-                service = self._get_service_from_registry(
-                                                service_url=service_url,
-                                                service_uid=service_uid)
+                service = self._get_service_from_registry(service_url=service_url, service_uid=service_uid)
                 must_write = True
 
         if service_uid is not None:
             if service.uid() != service_uid:
                 raise PermissionError(
-                    "Disagreement over the service UID for '%s' (%s)" %
-                    (service, service_uid))
+                    "Disagreement over the service UID for '%s' (%s)" % (service, service_uid)
+                )
 
         if must_write:
             self.add_service(service)
@@ -536,6 +542,7 @@ class Wallet:
         """Remove all trusted services from this Wallet"""
         import glob as _glob
         import os as _os
+
         service_files = _glob.glob("%s/*/service_*.json" % self._wallet_dir)
 
         for service_file in service_files:
@@ -552,21 +559,29 @@ class Wallet:
 
         service_url = service.canonical_url()
 
-        from Acquire.ObjectStore import string_to_safestring \
-            as _string_to_safestring
+        from Acquire.ObjectStore import string_to_safestring as _string_to_safestring
 
         service_dir = Wallet._get_service_dir(service.uid())
         service_file = "%s/service_%s.json" % (
-            service_dir, _string_to_safestring(service_url))
+            service_dir,
+            _string_to_safestring(service_url),
+        )
 
         import os as _os
 
         if _os.path.exists(service_file):
             _os.unlink(service_file)
 
-    def send_password(self, url, username=None, password=None,
-                      otpcode=None, remember_password=True,
-                      remember_device=None, dryrun=None):
+    def send_password(
+        self,
+        url,
+        username=None,
+        password=None,
+        otpcode=None,
+        remember_password=True,
+        remember_device=None,
+        dryrun=None,
+    ):
         """Send a password and one-time code to the supplied login url"""
         if not remember_password:
             remember_device = False
@@ -577,43 +592,48 @@ class Wallet:
         try:
             from urllib.parse import urlparse as _urlparse
             from urllib.parse import parse_qs as _parse_qs
+
             idcode = _parse_qs(_urlparse(url).query)["id"][0]
         except Exception as e:
             from Acquire.Client import LoginError
+
             raise LoginError(
                 "Cannot identify the session or service information from "
                 "the login URL '%s'. This should have id=XX-XX/YY.YY.YY.YY "
-                "as a query parameter. <%s> %s" %
-                (url, e.__class__.__name__, str(e)))
+                "as a query parameter. <%s> %s" % (url, e.__class__.__name__, str(e))
+            )
 
         try:
             (service_uid, short_uid) = idcode.split("/")
         except:
             from Acquire.Client import LoginError
+
             raise LoginError(
                 "Cannot extract the service_uid and short_uid from the "
                 "login ID code '%s'. This should be in the format "
-                "XX-XX/YY.YY.YY.YY" % idcode)
+                "XX-XX/YY.YY.YY.YY" % idcode
+            )
 
         # now get the service
         try:
             service = self.get_service(service_uid=service_uid)
         except Exception as e:
             from Acquire.Client import LoginError
+
             raise LoginError(
-                "Cannot find the service with UID %s: <%s> %s" %
-                (service_uid, e.__class__.__name__, str(e)))
+                "Cannot find the service with UID %s: <%s> %s" % (service_uid, e.__class__.__name__, str(e))
+            )
 
         if not service.can_identify_users():
             from Acquire.Client import LoginError
+
             raise LoginError(
                 "Service '%s' is unable to identify users! "
                 "You cannot log into something that is not "
-                "a valid identity service!" % (service))
+                "a valid identity service!" % (service)
+            )
 
-        userinfo = self._find_userinfo(username=username,
-                                       password=password,
-                                       service_uid=service_uid)
+        userinfo = self._find_userinfo(username=username, password=password, service_uid=service_uid)
 
         if username is None:
             username = userinfo["username"]
@@ -639,30 +659,48 @@ class Wallet:
             # user is providing the primary OTP, so this is not a device
             device_uid = None
 
-        _output("\nLogging in to '%s', session '%s'..." % (
-                service.canonical_url(), short_uid), end="")
+        _output(
+            "\nLogging in to '%s', session '%s'..." % (service.canonical_url(), short_uid),
+            end="",
+        )
 
         _flush_output()
 
         if dryrun:
-            print("Calling %s with username=%s, password=%s, otpcode=%s, "
-                  "remember_device=%s, device_uid=%s, short_uid=%s "
-                  "user_uid=%s" %
-                  (service.canonical_url(), username, password, otpcode,
-                   remember_device, device_uid, short_uid, user_uid))
+            print(
+                "Calling %s with username=%s, password=%s, otpcode=%s, "
+                "remember_device=%s, device_uid=%s, short_uid=%s "
+                "user_uid=%s"
+                % (
+                    service.canonical_url(),
+                    username,
+                    password,
+                    otpcode,
+                    remember_device,
+                    device_uid,
+                    short_uid,
+                    user_uid,
+                )
+            )
             return
 
         try:
             from Acquire.Client import Credentials as _Credentials
 
-            creds = _Credentials(username=username, password=password,
-                                 otpcode=otpcode, short_uid=short_uid,
-                                 device_uid=device_uid)
+            creds = _Credentials(
+                username=username,
+                password=password,
+                otpcode=otpcode,
+                short_uid=short_uid,
+                device_uid=device_uid,
+            )
 
-            args = {"credentials": creds.to_data(identity_uid=service.uid()),
-                    "user_uid": user_uid,
-                    "remember_device": remember_device,
-                    "short_uid": short_uid}
+            args = {
+                "credentials": creds.to_data(identity_uid=service.uid()),
+                "user_uid": user_uid,
+                "remember_device": remember_device,
+                "short_uid": short_uid,
+            }
 
             response = service.call_function(function="login", args=args)
             _output("SUCCEEDED!")
@@ -671,6 +709,7 @@ class Wallet:
             _output("FAILED!")
             _flush_output()
             from Acquire.Client import LoginError
+
             raise LoginError("Failed to log in. %s" % e.args)
 
         if not remember_password:
@@ -704,6 +743,4 @@ class Wallet:
         except:
             pass
 
-        self._set_userinfo(userinfo=userinfo,
-                           user_uid=user_uid,
-                           service_uid=service.uid())
+        self._set_userinfo(userinfo=userinfo, user_uid=user_uid, service_uid=service.uid())

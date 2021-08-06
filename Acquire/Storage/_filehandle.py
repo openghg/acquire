@@ -70,7 +70,15 @@ class FileHandle:
 
     """
 
-    def __init__(self, filename=None, remote_filename=None, aclrules=None, drive_uid=None, compress=True, local_cutoff=None):
+    def __init__(
+        self,
+        filename=None,
+        remote_filename=None,
+        aclrules=None,
+        drive_uid=None,
+        compress=True,
+        local_cutoff=None,
+    ):
         """Construct a handle for the local file 'filename'. This will
         create the initial version of the file that can be uploaded
         to the storage service. If the file is less than

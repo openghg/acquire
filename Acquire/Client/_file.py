@@ -103,7 +103,9 @@ class File:
             args["aclrules"] = aclrules.to_data()
 
         if self._creds.is_user():
-            authorisation = _Authorisation(resource="chunk_upload %s" % uploaded_name, user=self._creds.user())
+            authorisation = _Authorisation(
+                resource="chunk_upload %s" % uploaded_name, user=self._creds.user()
+            )
 
             args["authorisation"] = authorisation.to_data()
         elif self._creds.is_par():
@@ -161,14 +163,20 @@ class File:
         drive_uid = self._metadata.drive().uid()
 
         filehandle = _FileHandle(
-            filename=filename, remote_filename=uploaded_name, drive_uid=drive_uid, aclrules=aclrules, local_cutoff=local_cutoff
+            filename=filename,
+            remote_filename=uploaded_name,
+            drive_uid=drive_uid,
+            aclrules=aclrules,
+            local_cutoff=local_cutoff,
         )
 
         try:
             args = {"filehandle": filehandle.to_data()}
 
             if self._creds.is_user():
-                authorisation = _Authorisation(resource="upload %s" % filehandle.fingerprint(), user=self._creds.user())
+                authorisation = _Authorisation(
+                    resource="upload %s" % filehandle.fingerprint(), user=self._creds.user()
+                )
 
                 args["authorisation"] = authorisation.to_data()
             elif self._creds.is_par():
@@ -195,7 +203,7 @@ class File:
             storage_service = self._creds.storage_service()
 
             response = storage_service.call_function(function="upload", args=args)
-            
+
             if "Error" in response:
                 raise ValueError(f"Error calling function: {response['Error']}")
 
@@ -264,7 +272,9 @@ class File:
 
         from Acquire.Client import ChunkDownloader as _ChunkDownloader
 
-        downloader = _ChunkDownloader.from_data(response["downloader"], privkey=privkey, service=storage_service)
+        downloader = _ChunkDownloader.from_data(
+            response["downloader"], privkey=privkey, service=storage_service
+        )
 
         downloader._start_download(filename=filename, directory=directory)
 
@@ -307,7 +317,11 @@ class File:
 
             privkey = _get_private_key("parkey")
 
-        args = {"drive_uid": drive_uid, "filename": self._metadata.name(), "encryption_key": privkey.public_key().to_data()}
+        args = {
+            "drive_uid": drive_uid,
+            "filename": self._metadata.name(),
+            "encryption_key": privkey.public_key().to_data(),
+        }
 
         if self._creds.is_user():
             from Acquire.Client import Authorisation as _Authorisation
@@ -378,12 +392,16 @@ class File:
             if filemeta.is_compressed():
                 from Acquire.Client import uncompress as _uncompress
 
-                _uncompress(inputfile=filename, outputfile=filename, compression_type=filemeta.compression_type())
+                _uncompress(
+                    inputfile=filename, outputfile=filename, compression_type=filemeta.compression_type()
+                )
 
         elif "downloader" in response:
             from Acquire.Client import ChunkDownloader as _ChunkDownloader
 
-            downloader = _ChunkDownloader.from_data(response["downloader"], privkey=privkey, service=storage_service)
+            downloader = _ChunkDownloader.from_data(
+                response["downloader"], privkey=privkey, service=storage_service
+            )
 
             filename = downloader.download(filename=filename, directory=directory)
 

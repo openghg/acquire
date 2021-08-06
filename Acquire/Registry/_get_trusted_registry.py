@@ -1,10 +1,9 @@
-
 __all__ = ["get_trusted_registry_service", "get_primary_registry_uid"]
 
 
 def get_primary_registry_uid(service_uid):
     """Return the primary registry uid of the service with
-       passed service_uid.
+    passed service_uid.
     """
     try:
         root = service_uid.split("-")[0]
@@ -13,12 +12,11 @@ def get_primary_registry_uid(service_uid):
         return "a0-a0"
 
 
-def get_trusted_registry_service(registry_uid=None,
-                                 service_uid=None, service_url=None):
+def get_trusted_registry_service(registry_uid=None, service_uid=None, service_url=None):
     """Return the trusted service info for the registry with specified
-       registry_uid, or get any trusted registry service using either
-       'service_uid' or 'service_url' as a starting hint to
-       locate a suitable registry
+    registry_uid, or get any trusted registry service using either
+    'service_uid' or 'service_url' as a starting hint to
+    locate a suitable registry
     """
     if service_uid is not None:
         # for the moment, just try to get one registry. Eventually we should
@@ -35,37 +33,36 @@ def get_trusted_registry_service(registry_uid=None,
             return get_trusted_registry_service(registry_uid="Z9-Z9")
 
     if registry_uid is None:
-        raise PermissionError(
-            "You must specify one of registry_uid, service_uid "
-            "or service_url")
+        raise PermissionError("You must specify one of registry_uid, service_uid " "or service_url")
 
     from Acquire.Service import get_trusted_service as _get_trusted_service
 
     try:
-        registry_service = _get_trusted_service(service_uid=registry_uid,
-                                                autofetch=False)
+        registry_service = _get_trusted_service(service_uid=registry_uid, autofetch=False)
     except:
         registry_service = None
 
     if registry_service is not None:
         if not registry_service.is_registry_service():
             from Acquire.Service import ServiceError
+
             raise ServiceError(
                 "The requested service (%s) for %s is NOT a "
-                "registry service!" % (registry_service, registry_uid))
+                "registry service!" % (registry_service, registry_uid)
+            )
 
         if registry_service.uid() != registry_uid:
             from Acquire.Service import ServiceError
+
             raise ServiceError(
-                "Disagreement of UID (%s) is NOT the right registry service!" %
-                registry_service)
+                "Disagreement of UID (%s) is NOT the right registry service!" % registry_service
+            )
 
         # everything is ok - we have seen this registry before
         return registry_service
 
     # boostrapping
-    from Acquire.Registry import get_registry_details \
-        as _get_registry_details
+    from Acquire.Registry import get_registry_details as _get_registry_details
 
     details = _get_registry_details(registry_uid)
 
@@ -87,40 +84,41 @@ def get_trusted_registry_service(registry_uid=None,
     # properly returned
     challenge = _PrivateKey.random_passphrase()
     encrypted_challenge = _bytes_to_string(pubkey.encrypt(challenge))
-    args = {"challenge": encrypted_challenge,
-            "fingerprint": pubkey.fingerprint()}
+    args = {"challenge": encrypted_challenge, "fingerprint": pubkey.fingerprint()}
 
-    result = _call_function(service_url=details["canonical_url"],
-                            function=None,
-                            args=args,
-                            args_key=pubkey,
-                            response_key=privkey,
-                            public_cert=pubcert)
+    result = _call_function(
+        service_url=details["canonical_url"],
+        function=None,
+        args=args,
+        args_key=pubkey,
+        response_key=privkey,
+        public_cert=pubcert,
+    )
 
     if result["response"] != challenge:
         from Acquire.Service import ServiceError
+
         raise ServiceError(
-            "The requested service (%s) failed to respond to the challenge!" %
-            registry_service)
+            "The requested service (%s) failed to respond to the challenge!" % registry_service
+        )
 
     registry_service = _Service.from_data(result["service_info"])
 
     if not registry_service.is_registry_service():
         from Acquire.Service import ServiceError
-        raise ServiceError(
-            "The requested service (%s) is NOT a registry service!" %
-            registry_service)
+
+        raise ServiceError("The requested service (%s) is NOT a registry service!" % registry_service)
 
     if registry_service.uid() != details["uid"]:
         from Acquire.Service import ServiceError
-        raise ServiceError(
-            "Disagreement of UID (%s) is NOT the right registry service!" %
-            registry_service)
+
+        raise ServiceError("Disagreement of UID (%s) is NOT the right registry service!" % registry_service)
 
     # ok - we've got the registry - add this to the set of
     # trusted services so that we don't need to bootstrap from
     # the registry details again
     from Acquire.Service import trust_service as _trust_service
+
     _trust_service(registry_service)
 
     return registry_service

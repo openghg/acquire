@@ -20,7 +20,9 @@ class AccessService(_Service):
             if not self.is_access_service():
                 from Acquire.Access import AccessServiceError
 
-                raise AccessServiceError("Cannot construct an AccessService from a service which is not an access service!")
+                raise AccessServiceError(
+                    "Cannot construct an AccessService from a service which is not an access service!"
+                )
         else:
             _Service.__init__(self)
 
@@ -31,13 +33,13 @@ class AccessService(_Service):
         Args:
              function: function to route
              args: arguments to be passed into function
-
          Returns:
              function: function object
         """
-
         from access.route import access_functions as _access_functions
         from admin.handler import create_handler as _create_handler
+
+        from admin.handler import handle_call
 
         handler = _create_handler(_access_functions)
         return handler(function=function, args=args)
@@ -56,7 +58,7 @@ class AccessService(_Service):
 
         try:
             return services["storage"][0]
-        except:
+        except Exception:
             from Acquire.Service import ServiceError
 
             raise ServiceError("There is no trusted storage service known to this access " "service")

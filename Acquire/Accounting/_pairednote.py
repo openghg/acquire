@@ -1,11 +1,11 @@
-
 __all__ = ["PairedNote"]
 
 
 class PairedNote:
     """This class holds a DebitNote together with its matching
-       CreditNote(s)
+    CreditNote(s)
     """
+
     def __init__(self, debit_note, credit_note):
         """Construct from the matching pair of notes"""
         from Acquire.Accounting import CreditNote as _CreditNote
@@ -18,21 +18,20 @@ class PairedNote:
             raise TypeError("The credit_note must be of type CreditNote!")
 
         if credit_note.debit_note_uid() != debit_note.uid():
-            raise ValueError("You must pair up DebitNote (%s) with a "
-                             "matching CreditNote (%s)" %
-                             (debit_note.uid(), credit_note.debit_note_uid()))
+            raise ValueError(
+                "You must pair up DebitNote (%s) with a "
+                "matching CreditNote (%s)" % (debit_note.uid(), credit_note.debit_note_uid())
+            )
 
         self._debit_note = debit_note
         self._credit_note = credit_note
 
     def __str__(self):
-        return "PairedNote(debit_note=%s, credit_note=%s)" % \
-                    (str(self._debit_note), str(self._credit_note))
+        return "PairedNote(debit_note=%s, credit_note=%s)" % (str(self._debit_note), str(self._credit_note))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self._debit_note == other._debit_note and \
-                   self._credit_note == other._credit_note
+            return self._debit_note == other._debit_note and self._credit_note == other._credit_note
         else:
             return False
 
@@ -50,7 +49,7 @@ class PairedNote:
     @staticmethod
     def create(debit_notes, credit_notes):
         """Return a list of PairedNotes that pair together the passed
-           debit notes and credit notes
+        debit notes and credit notes
         """
         try:
             debit_note = debit_notes[0]
@@ -73,15 +72,16 @@ class PairedNote:
 
         for debit_note in debit_notes:
             if debit_note.uid() in credit_notes:
-                pairs.append(PairedNote(debit_note,
-                             credit_notes[debit_note.uid()]))
+                pairs.append(PairedNote(debit_note, credit_notes[debit_note.uid()]))
             else:
                 missing.append(debit_note)
 
         if len(missing) > 0 or len(credit_notes) != len(debit_notes):
             from Acquire.Accounting import UnbalancedLedgerError
+
             raise UnbalancedLedgerError(
                 "Cannot balance the ledger as the debit do not match the "
-                "credits %s versus %s" % (str(debit_notes), str(credit_notes)))
+                "credits %s versus %s" % (str(debit_notes), str(credit_notes))
+            )
 
         return pairs

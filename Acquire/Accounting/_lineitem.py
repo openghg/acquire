@@ -1,11 +1,11 @@
-
 __all__ = ["LineItem"]
 
 
 class LineItem:
     """This class holds the data for a line item in the account. This holds
-       basic information about the item, e.g. its UID and authorisation
+    basic information about the item, e.g. its UID and authorisation
     """
+
     def __init__(self, uid=None, authorisation=None):
         self._uid = uid
 
@@ -35,7 +35,7 @@ class LineItem:
 
     def uid(self):
         """Return the UID of the TransactionRecord that provides
-           more information about this line item in the ledger
+        more information about this line item in the ledger
         """
         return self._uid
 
@@ -60,13 +60,13 @@ class LineItem:
         """Return a LineItem constructed from the json-decoded dictionary"""
         l = LineItem()
 
-        if (data and len(data) > 0):
+        if data and len(data) > 0:
             l._uid = data["uid"]
 
             if "authorisation" in data:
                 from Acquire.Identity import Authorisation as _Authorisation
-                l._authorisation = _Authorisation.from_data(
-                    data["authorisation"])
+
+                l._authorisation = _Authorisation.from_data(data["authorisation"])
             else:
                 l._authorisation = None
 

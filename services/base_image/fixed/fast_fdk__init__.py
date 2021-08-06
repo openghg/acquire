@@ -23,6 +23,7 @@ constants = _lazy_import.lazy_module("fdk.constants")
 log = _lazy_import.lazy_module("fdk.log")
 http_stream = _lazy_import.lazy_module("fdk.http_stream")
 
+
 def handle(handle_func):
     log.log("entering handle")
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
@@ -36,8 +37,7 @@ def handle(handle_func):
         if lsnr is None:
             log.log("{0} is not set".format(constants.FN_LISTENER))
             sys.exit(1)
-        log.log("{0} is set, value: {1}".
-                format(constants.FN_LISTENER, lsnr))
+        log.log("{0} is set, value: {1}".format(constants.FN_LISTENER, lsnr))
         http_stream.start(handle_func, lsnr, loop=loop)
     else:
         log.log("incompatible function format!")

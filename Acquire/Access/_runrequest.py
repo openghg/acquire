@@ -1,4 +1,3 @@
-
 from Acquire.Access import Request as _Request
 
 __all__ = ["RunRequest"]
@@ -6,18 +5,19 @@ __all__ = ["RunRequest"]
 
 class RunRequest(_Request):
     """This class holds a request to run a particular calculation
-       on a RunService. The result of this request will be a
-       Location in which the output from this request can
-       be read.
+    on a RunService. The result of this request will be a
+    Location in which the output from this request can
+    be read.
     """
+
     def __init__(self, image=None, input=None, resources=None):
         """Construct the request specifying the container image 'image'
-           that contains the software used for the calculation,
-           and the location of the input files 'input' that will be
-           downloaded and run using this container.
+        that contains the software used for the calculation,
+        and the location of the input files 'input' that will be
+        downloaded and run using this container.
 
-           You can also optionally supply the compute resources
-           (resources) that will be needed to run this job
+        You can also optionally supply the compute resources
+        (resources) that will be needed to run this job
         """
         super().__init__()
 
@@ -29,10 +29,12 @@ class RunRequest(_Request):
 
         if self._input is not None:
             from Acquire.Client import Location as _Location
+
             if not isinstance(self._input, _Location):
                 raise TypeError("The input location must be type Location")
 
             from Acquire.ObjectStore import create_uid as _create_uid
+
             self._uid = _create_uid()
 
     def is_null(self):
@@ -43,8 +45,7 @@ class RunRequest(_Request):
         if self.is_null():
             return "RunRequest::null"
         else:
-            return "RunRequest(uid=%s, image=%s, input=%s)" % (
-                    self._uid, self._image, self._input)
+            return "RunRequest(uid=%s, image=%s, input=%s)" % (self._uid, self._image, self._input)
 
     def __repr__(self):
         return self.__str__()
@@ -64,17 +65,16 @@ class RunRequest(_Request):
 
     def fingerprint(self):
         """Return a unique fingerprint for this request that can be
-           used for signing and verifying authorisations
+        used for signing and verifying authorisations
         """
         if self.is_null():
             return None
 
-        return "%s|%s|%s" % (self.uid(), self.image(),
-                             self.input().to_string())
+        return "%s|%s|%s" % (self.uid(), self.image(), self.input().to_string())
 
     def image(self):
         """Return the full path to the container image used for the
-           simulation
+        simulation
         """
         if self.is_null():
             return None
@@ -83,7 +83,7 @@ class RunRequest(_Request):
 
     def input(self):
         """Return the location of the input files used for this
-           calculation
+        calculation
         """
         if self.is_null():
             return None
@@ -119,6 +119,7 @@ class RunRequest(_Request):
         """Creates a RunRequest object from the JSON data in data"""
         if data and len(data) > 0:
             from Acquire.Client import Location as _Location
+
             r = RunRequest()
             r._from_data(data)
 

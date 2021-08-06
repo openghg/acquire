@@ -115,7 +115,6 @@ venv.bak/
 # Secret key files
 *.pem
 
-credentials/*
 source/base_image/Acquire/*
 user/notebooks/.ipynb_checkpoints/
 *secret_key*

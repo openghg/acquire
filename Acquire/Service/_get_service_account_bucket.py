@@ -1,6 +1,7 @@
-
 import os as _os
 import json as _json
+from pathlib import Path
+from typing import Union
 
 from cachetools import cached as _cached
 from cachetools import LRUCache as _LRUCache
@@ -9,9 +10,7 @@ from cachetools import LRUCache as _LRUCache
 # least recently used items from the cache
 _login_cache = _LRUCache(maxsize=50)
 
-__all__ = ["get_service_account_bucket",
-           "push_testing_objstore", "pop_testing_objstore",
-           "clear_login_cache"]
+__all__ = ["get_service_account_bucket", "push_testing_objstore", "pop_testing_objstore", "clear_login_cache"]
 
 _current_testing_objstore = None
 _testing_objstore_stack = []
@@ -43,7 +42,7 @@ def pop_testing_objstore():
 
     try:
         d = _testing_objstore_stack.pop()
-    except:
+    except Exception:
         d = None
 
     _current_testing_objstore = d
@@ -54,33 +53,31 @@ def pop_testing_objstore():
 # lots of round trips to the object store, and it will give the same
 # result regardless of which Fn function on the service makes the call
 @_cached(_login_cache)
-def get_service_account_bucket(testing_dir=None):
+def get_service_account_bucket(testing_dir: Union[str, Path] = None):
     """This function logs into the object store account of the service account.
-       Accessing the object store means being able to access
-       all resources and which can authorise the creation
-       of access all resources on the object store. Obviously this is
-       a powerful account, so only log into it if you need it!!!
+    Accessing the object store means being able to access
+    all resources and which can authorise the creation
+    of access all resources on the object store. Obviously this is
+    a powerful account, so only log into it if you need it!!!
 
-       The login information should not be put into a public
-       repository or stored in plain text. In this case,
-       the login information is held in an environment variable
-       (which should be encrypted or hidden in some way...)
+    The login information should not be put into a public
+    repository or stored in plain text. In this case,
+    the login information is held in an environment variable
+    (which should be encrypted or hidden in some way...)
     """
-    from Acquire.Service import assert_running_service as \
-        _assert_running_service
+    from Acquire.Service import assert_running_service, ServiceAccountError
+    from pathlib import Path
 
-    _assert_running_service()
+    assert_running_service()
 
     # read the password for the secret key from the filesystem
     try:
-        with open("secret_key", "r") as FILE:
-            password = FILE.readline()[0:-1]
-    except:
+        password = Path("secret_key").read_text()
+    except FileNotFoundError:
         password = None
 
         # we must be in testing mode...
-        from Acquire.ObjectStore import use_testing_object_store_backend as \
-            _use_testing_object_store_backend
+        from Acquire.ObjectStore import use_testing_object_store_backend as _use_testing_object_store_backend
 
         # see if this is running in testing mode...
         global _current_testing_objstore
@@ -91,62 +88,59 @@ def get_service_account_bucket(testing_dir=None):
             return _use_testing_object_store_backend(_current_testing_objstore)
 
     if password is None:
-        from Acquire.Service import ServiceAccountError
         raise ServiceAccountError(
             "You need to supply login credentials via the 'secret_key' "
             "file, and 'SECRET_KEY' and 'SECRET_CONFIG' environment "
-            "variables! %s" % testing_dir)
+            "variables! %s" % testing_dir
+        )
 
     secret_key = _os.getenv("SECRET_KEY")
 
     if secret_key is None:
-        from Acquire.Service import ServiceAccountError
         raise ServiceAccountError(
             "You must supply the password used to unlock the configuration "
-            "key in the 'SECRET_KEY' environment variable")
+            "key in the 'SECRET_KEY' environment variable"
+        )
 
     try:
         secret_key = _json.loads(secret_key)
     except Exception as e:
-        from Acquire.Service import ServiceAccountError
         raise ServiceAccountError(
-            "Unable to decode valid JSON from the secret key: %s" % str(e))
+            f"Unable to decode valid JSON from the SECRET_KEY environment variable: {str(e)}"
+        )
 
     # use the password to decrypt the SECRET_KEY in the config
     try:
         from Acquire.Crypto import PrivateKey as _PrivateKey
-        secret_key = _PrivateKey.from_data(secret_key, password)
+
+        secret_key = _PrivateKey.from_data(data=secret_key, passphrase=password)
     except Exception as e:
-        from Acquire.Service import ServiceAccountError
         raise ServiceAccountError(
-            "Unable to open the private SECRET_KEY using the password "
-            "supplied in the 'secret_key' file: %s" % str(e))
+            f"Unable to open the private SECRET_KEY using the password supplied in the 'secret_key' file: {e}"
+        )
 
     config = _os.getenv("SECRET_CONFIG")
 
     if config is None:
-        from Acquire.Service import ServiceAccountError
         raise ServiceAccountError(
-            "You must supply the encrypted config in the 'SECRET_CONFIG' "
-            "environment variable!")
+            "You must supply the encrypted config in the 'SECRET_CONFIG' " "environment variable!"
+        )
 
     try:
         from Acquire.ObjectStore import string_to_bytes as _string_to_bytes
+
         config = secret_key.decrypt(_string_to_bytes(config))
     except Exception as e:
-        from Acquire.Service import ServiceAccountError
         raise ServiceAccountError(
             "Cannot decrypt the 'SECRET_CONFIG' with the 'SECRET_KEY'. Are "
-            "you sure that the configuration has been set up correctly? %s "
-            % str(e))
+            "you sure that the configuration has been set up correctly? %s " % str(e)
+        )
 
     # use the secret_key to decrypt the config in SECRET_CONFIG
     try:
         config = _json.loads(config)
     except Exception as e:
-        from Acquire.Service import ServiceAccountError
-        raise ServiceAccountError(
-            "Unable to decode valid JSON from the config: %s" % str(e))
+        raise ServiceAccountError("Unable to decode valid JSON from the config: %s" % str(e))
 
     # get info from this config
     access_data = config["LOGIN"]
@@ -162,7 +156,7 @@ def get_service_account_bucket(testing_dir=None):
 
     try:
         cloud_backend = config["CLOUD_BACKEND"]
-    except:
+    except KeyError:
         cloud_backend = "oci"
 
     _os.environ["CLOUD_BACKEND"] = cloud_backend
@@ -170,8 +164,7 @@ def get_service_account_bucket(testing_dir=None):
     if cloud_backend == "oci":
         # we have OCI login details, so make sure that we are using
         # the OCI object store backend
-        from Acquire.ObjectStore import use_oci_object_store_backend as \
-            _use_oci_object_store_backend
+        from Acquire.ObjectStore import use_oci_object_store_backend as _use_oci_object_store_backend
 
         _use_oci_object_store_backend()
 
@@ -180,19 +173,17 @@ def get_service_account_bucket(testing_dir=None):
             from ._oci_account import OCIAccount as _OCIAccount
 
             account_bucket = _OCIAccount.create_and_connect_to_bucket(
-                                            access_data,
-                                            bucket_data["compartment"],
-                                            bucket_data["bucket"])
+                login_details=access_data,
+                compartment=bucket_data["compartment"],
+                bucket_name=bucket_data["bucket"],
+            )
         except Exception as e:
-            from Acquire.Service import ServiceAccountError
-            raise ServiceAccountError(
-                "Error connecting to the service account: %s" % str(e))
+            raise ServiceAccountError("Error connecting to the service account: %s" % str(e))
 
     elif cloud_backend == "gcp":
         # we have valid GCP login details, so make sure that we are
         # using the GCP object store backend
-        from Acquire.ObjectStore import use_gcp_object_store_backend as \
-            _use_gcp_object_store_backend
+        from Acquire.ObjectStore import use_gcp_object_store_backend as _use_gcp_object_store_backend
 
         _use_gcp_object_store_backend()
 
@@ -201,11 +192,9 @@ def get_service_account_bucket(testing_dir=None):
             from ._gcp_account import GCPAccount as _GCPAccount
 
             account_bucket = _GCPAccount.create_and_connect_to_bucket(
-                                            access_data,
-                                            bucket_data["bucket"])
+                login_details=access_data, bucket_name=bucket_data["bucket"]
+            )
         except Exception as e:
-            from Acquire.Service import ServiceAccountError
-            raise ServiceAccountError(
-                "Error connecting to the service account: %s" % str(e))
+            raise ServiceAccountError("Error connecting to the service account: %s" % str(e))
 
     return account_bucket

@@ -1,8 +1,15 @@
-
-__all__ = ["QRCodeError", "LoginError", "AccountError",
-           "PaymentError", "UserError", "PARError",
-           "PARTimeoutError", "PARPermissionsError",
-           "PARReadError", "PARWriteError"]
+__all__ = [
+    "QRCodeError",
+    "LoginError",
+    "AccountError",
+    "PaymentError",
+    "UserError",
+    "PARError",
+    "PARTimeoutError",
+    "PARPermissionsError",
+    "PARReadError",
+    "PARWriteError",
+]
 
 
 class QRCodeError(Exception):

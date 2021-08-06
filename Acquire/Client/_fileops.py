@@ -1,23 +1,21 @@
-
 __all__ = ["create_new_file", "compress", "uncompress"]
 
 
-def compress(inputfile=None, outputfile=None,
-             inputdata=None, compression_type="bz2"):
+def compress(inputfile=None, outputfile=None, inputdata=None, compression_type="bz2"):
     """Compress either the passed filename or filedata using the
-       specified compression type. This will compress either to the
-       file called 'outputfile', or to a tmpfile. The name of the
-       file will be returned. If this is compressing data,
-       then it will return the compressed data
+    specified compression type. This will compress either to the
+    file called 'outputfile', or to a tmpfile. The name of the
+    file will be returned. If this is compressing data,
+    then it will return the compressed data
 
-       Args:
-            inputfile (str, default=None): Name of file to compress
-            outputfile (str, default=None): Name of compressed file
-            inputdata (str, default=None): Data to be compressed
-            compression_type (str, default="bz2"): Compression type,
-            currently only bz2 supported
-       Returns:
-            bytes: Compressed data
+    Args:
+         inputfile (str, default=None): Name of file to compress
+         outputfile (str, default=None): Name of compressed file
+         inputdata (str, default=None): Data to be compressed
+         compression_type (str, default="bz2"): Compression type,
+         currently only bz2 supported
+    Returns:
+         bytes: Compressed data
     """
     import os as _os
 
@@ -30,6 +28,7 @@ def compress(inputfile=None, outputfile=None,
 
             # compress to a tmpfile and then move to outputfile later...
             import tempfile as _tempfile
+
             (fd, bz2file) = _tempfile.mkstemp()
             _os.close(fd)
 
@@ -67,26 +66,24 @@ def compress(inputfile=None, outputfile=None,
             # compress the passed data and return
             return _bz2.compress(inputdata)
     else:
-        raise ValueError("Unrecognised compression type '%s'" %
-                         compression_type)
+        raise ValueError("Unrecognised compression type '%s'" % compression_type)
 
 
-def uncompress(inputfile=None, outputfile=None,
-               inputdata=None, compression_type="bz2"):
+def uncompress(inputfile=None, outputfile=None, inputdata=None, compression_type="bz2"):
     """Uncompress either the passed filename or filedata using the
-       specified compression type. This will uncompress either to the
-       file called 'outputfile', or to a tmpfile. The name of the
-       file will be returned. If this is uncompressing data,
-       then it will return the uncompressed data
+    specified compression type. This will uncompress either to the
+    file called 'outputfile', or to a tmpfile. The name of the
+    file will be returned. If this is uncompressing data,
+    then it will return the uncompressed data
 
-       Args:
-            inputfile (str, default=None): Name of file to decompress
-            outputfile (str, default=None): Name of decompressed file
-            inputdata (str, default=None): Data to be decompressed
-            compression_type (str, default="bz2"): Compression type,
-            currently only bz2 supported
-       Returns:
-            bytes: Decompressed data
+    Args:
+         inputfile (str, default=None): Name of file to decompress
+         outputfile (str, default=None): Name of decompressed file
+         inputdata (str, default=None): Data to be decompressed
+         compression_type (str, default="bz2"): Compression type,
+         currently only bz2 supported
+    Returns:
+         bytes: Decompressed data
     """
     import os as _os
 
@@ -99,6 +96,7 @@ def uncompress(inputfile=None, outputfile=None,
 
             # compress to a tmpfile and then move to outputfile later...
             import tempfile as _tempfile
+
             (fd, bz2file) = _tempfile.mkstemp()
             _os.close(fd)
 
@@ -136,20 +134,19 @@ def uncompress(inputfile=None, outputfile=None,
             # compress the passed data and return
             return _bz2.decompress(inputdata)
     else:
-        raise ValueError("Unrecognised compression type '%s'" %
-                         compression_type)
+        raise ValueError("Unrecognised compression type '%s'" % compression_type)
 
 
 def create_new_file(filename, directory=None):
     """Create a new file in directory 'directory' (default current directory)
-       called 'filename'. If the file already exists, then create a new
-       file with name derived from 'filename'
+    called 'filename'. If the file already exists, then create a new
+    file with name derived from 'filename'
 
-        Args:
-            filename (str): Name of file to create
-            directory (str, default=None): Directory in which to create file
-        Returns:
-            None
+     Args:
+         filename (str): Name of file to create
+         directory (str, default=None): Directory in which to create file
+     Returns:
+         None
     """
     import os as _os
 
