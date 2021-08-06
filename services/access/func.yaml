@@ -1,7 +1,8 @@
 schema_version: 20180708
 name: access-root
-version: 0.0.107
+version: 0.0.109
 runtime: docker
+memory: 1024
 triggers:
 - name: root
   type: http

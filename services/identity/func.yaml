@@ -1,7 +1,8 @@
 schema_version: 20180708
 name: identity-root
-version: 0.0.35
+version: 0.0.37
 runtime: docker
+memory: 1024
 triggers:
 - name: root
   type: http

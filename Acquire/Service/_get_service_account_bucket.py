@@ -70,7 +70,7 @@ def get_service_account_bucket(testing_dir: Union[str, Path] = None):
 
     assert_running_service()
 
-    # read the password for the secret key from the filesystem
+    # Read the password for the secret key from the filesystem
     try:
         password = Path("secret_key").read_text()
     except FileNotFoundError:
