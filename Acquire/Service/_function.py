@@ -516,7 +516,7 @@ def call_function(
 
         raise RemoteFunctionCallError(
             "Cannot call remote function '%s' at '%s' because of a possible "
-            "network issue: requests exeption = '%s'" % (function, service_url, str(e))
+            "network issue: requests exception = '%s'" % (function, service_url, str(e))
         )
 
     args = None

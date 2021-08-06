@@ -19,7 +19,7 @@ def acquire_call(function_name: str, data: Dict, service_name: str) -> Dict:
     fn_to_call = getattr(module, "run")
 
     try:
-        response_data = fn_to_call(args=data)
+        response_data: Dict = fn_to_call(args=data)
         return response_data
     except Exception:
         tb = traceback.format_exc()
