@@ -26,7 +26,7 @@ class StorageService(_Service):
         function calls
         """
         from storage.route import storage_functions as _storage_functions
-        from admin.handler import create_handler as _create_handler
+        from Acquire.Service import create_handler
 
-        handler = _create_handler(additional_function=_storage_functions)
+        handler = create_handler(additional_function=_storage_functions)
         return handler(function=function, args=args)

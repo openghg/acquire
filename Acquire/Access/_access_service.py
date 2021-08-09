@@ -36,12 +36,10 @@ class AccessService(_Service):
          Returns:
              function: function object
         """
+        from Acquire.Service import create_handler
         from access.route import access_functions as _access_functions
-        from admin.handler import create_handler as _create_handler
 
-        from admin.handler import handle_call
-
-        handler = _create_handler(_access_functions)
+        handler = create_handler(_access_functions)
         return handler(function=function, args=args)
 
     def get_trusted_storage_service(self):
