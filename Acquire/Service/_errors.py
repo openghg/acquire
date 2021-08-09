@@ -8,6 +8,7 @@ __all__ = [
     "MissingServiceAccountError",
     "MissingServiceError",
     "ServiceAccountMissingKeyError",
+    "MissingFunctionError",
 ]
 
 
@@ -76,4 +77,8 @@ class MissingServiceAccountError(Exception):
 
 
 class MissingServiceError(Exception):
+    pass
+
+
+class MissingFunctionError(Exception):
     pass

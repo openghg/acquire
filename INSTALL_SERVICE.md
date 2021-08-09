@@ -12,8 +12,8 @@ Once SSL is working, we will close 8080...
 
 ## Step 2 - Install Fn pre-requisites
 
-Fn requires Docker 17.10.0-ce or later. To install thisInstall this, e.g. on CentOS
-using
+Fn requires Docker 17.10.0-ce or later. In this documentation we use a VM running CentOS 8, for other 
+distributions please check https://docs.docker.com/engine/install/.
 
 ```
 $ sudo yum install -y yum-utils
@@ -70,7 +70,7 @@ $ fn start
 
 Check this has worked by navigating to `http://{IP_ADDRESS_OF_SERVER}:8080`
 
-## Step 4 - Set up DNS and SSL
+## Step 4 - Set up NGINX + get a LetsEncrypt certificate
 
 Optional - if you want to secure access to your service then you need
 to create a DNS record for your service. First, create a DNS ANAME record
@@ -81,7 +81,6 @@ SSL.
 
 ```
 $ sudo yum install nginx
-$ sudo yum install certbot python2-certbot-nginx
 $ sudo systemctl enable nginx
 $ sudo systemctl start nginx
 ```
@@ -99,11 +98,27 @@ $ sudo firewall-cmd --zone=public --add-port=443/tcp --permanent
 Navigate to `http://{IP_ADDRESS_OF_SERVER}` to see if you can see the
 nginx launch page
 
-Now get the SSL certificate
+### Update NGINX configuration
+
+Now we need to update the NGINX configuration files
+
+
+
+### Install Certbot
+
+Now we need to install `certbot` to get the certificate for us
 
 ```
-# sudo certbot --nginx -d {HOSTNAME}
+$ sudo yum install epel-release
+$ sudo yum install certbot python3-certbot-nginx
 ```
+
+Now we can get the certificate
+
+```
+$ sudo certbot --nginx -d acquire.openghg.org
+```
+
 
 Finally, you need to set up redirect to the Fn service. Do this by
 editing your `/etc/nginx/nginx.conf` and making it equal
@@ -242,18 +257,7 @@ And allow the HTTP daemon network access
 $ setsebool -P httpd_can_network_connect 1
 ```
 
-## Step 5 - Clone Acquire
-
-Once you have tested that Fn is accessible, then you can next install Acquire.
-
-First, download via GitHub
-
-```
-$ git clone https://github.com/openghg/acquire
-$ cd acquire
-```
-
-## Step 6 - Create users for each service
+## Step 5 - Create users for each service
 
 Make sure that you have created Oracle user accounts for each
 service you want to install, with the ability to create object storage
@@ -263,6 +267,17 @@ for the service, e.g.
 - user = acquire_identity
 - compartment = acquire_services
 - bucket = identity_bucket
+
+## Step 6 - Clone Acquire
+
+Once you have tested that Fn is accessible, then you can next install Acquire.
+
+First, download via GitHub
+
+```
+$ git clone https://github.com/openghg/acquire.git
+$ cd acquire
+```
 
 ## Step 7 - Create the `tenancy.json` file
 
@@ -275,12 +290,26 @@ In the `credentials` folder create a file called `tenancy.json` and fill in the 
 }
 ```
 
-## Step 8 - Setup the Fn functions
+# Step 8 - Setup the Fn functions
 
-To setup the Fn functions we'll use the `setup_functions.py` file in the `credentials` folder.
+To setup the `Fn` functions we'll use the `setup_functions.py` script in the `credentials` folder. This script has some arguments you can pass to it.
 
 ```
-$ python setup_functions.py
+$ python setup_functions.py -h
+usage: setup_functions.py [-h] [--ci] [--save] [--load]
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --ci        create mock credentials for testing services with CI pipeline
+  --save      save the configuration to file
+  --load      load a previously created configuration
+```
+
+We will use the `--save` argument so that our configuration is saved to a `saved_config.json` file in the `credentials` folder.
+To start the setup of the functions run the script and follow the steps below.
+
+```
+$ python setup_functions.py --save
 ```
 
 ### Set the hostname for the Acquire server
@@ -305,7 +334,7 @@ Enter the user OCID:
 
 ### Key creation
 
-The script now creates an RSA keypair in the service folder. The private key will be given a passphrase that is stored by the script and later passed into Fn. We will take the public key and upload it to the Oracle Cloud Interface.
+The script next creates an RSA keypair in the service folder. The private key will be given a passphrase that is stored by the script and later passed into Fn. We will take the public key and upload it to the Oracle Cloud Interface.
 
 ### Uploading the public key
 
@@ -336,20 +365,20 @@ The OCI will then give us the fingeprint of the key, this will be in the format 
 
 ### Passing data to Fn
 
-After you've confirmed the fingerprint the script will create a file called `secret_key` in the service directory which will be used to encrypt
-the data that is passed to Fn.
+After you've confirmed the fingerprint the script will create a file called `secret_key` in the service directory. This contains a password which will be used to encrypt the data that is passed to Fn.
 
 > **_NOTE:_** The `secret_key` files and private keys (`<service_name>.pem`) files should never leave the server on which they are located.
 
 You should see a lot printed to the screen, showing that an encrypted config has been added for the service.
 
-You are now ready to repeat the process for the next service.
+Repeat this process for each service.
 
 ## Step 9 - Deploy the services
 
-Next, you need to deploy the services. Do this changing to the `services` folder and running
+Next, you need to deploy the services. Do this changing to the `services` folder and running the `deploy_all.sh` script.
 
 ```
+$ cd ../services
 $ bash ./deploy_all.sh
 ```
 

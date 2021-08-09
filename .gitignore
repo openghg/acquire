@@ -111,6 +111,8 @@ venv.bak/
 
 # vscode settings
 .vscode
+# pycharm
+.idea
 
 # Secret key files
 *.pem
@@ -122,3 +124,6 @@ user/notebooks/.ipynb_checkpoints/
 javascript/acquire.js
 
 .DS_Store
+
+credentials/saved_config.json
+credentials/tenancy.json

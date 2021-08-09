@@ -26,9 +26,9 @@ class RegistryService(_Service):
         function calls
         """
         from registry.route import registry_functions as _registry_functions
-        from admin.handler import create_handler as _create_handler
+        from Acquire.Service import create_handler
 
-        handler = _create_handler(_registry_functions)
+        handler = create_handler(_registry_functions)
         return handler(function=function, args=args)
 
     def get_service(self, service_url=None, service_uid=None):

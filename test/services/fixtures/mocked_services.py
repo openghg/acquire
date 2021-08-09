@@ -11,7 +11,7 @@ import Acquire
 import Acquire.Stubs
 
 
-from admin.handler import create_handler
+from Acquire.Service import create_handler
 from identity.route import route as identity_functions
 from accounting.route import route as accounting_functions
 from access.route import route as access_functions

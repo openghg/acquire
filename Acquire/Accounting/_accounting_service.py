@@ -35,7 +35,7 @@ class AccountingService(_Service):
              function: A handler function
         """
         from accounting.route import accounting_functions as _accounting_functions
-        from admin.handler import create_handler as _create_handler
+        from Acquire.Service import create_handler
 
-        handler = _create_handler(_accounting_functions)
+        handler = create_handler(_accounting_functions)
         return handler(function=function, args=args)

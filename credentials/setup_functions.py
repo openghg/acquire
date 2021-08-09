@@ -36,9 +36,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--ci", help="create mock credentials for testing services with CI pipeline", action="store_true"
 )
-parser.add_argument(
-    "--save", help="save the config (currently stored as plaintext so insecure)", action="store_true"
-)
+parser.add_argument("--save", help="save the configuration to file", action="store_true")
 parser.add_argument("--load", help="load a previously created configuration", action="store_true")
 args = parser.parse_args()
 
