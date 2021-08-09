@@ -257,6 +257,65 @@ And allow the HTTP daemon network access
 $ setsebool -P httpd_can_network_connect 1
 ```
 
+## Step 5 - Install a newer Python version
+
+To setup and use Acquire it'll be easier if we have a more recent version of Python available on the server.
+We'll build Python 3.9.6 from source in the steps below. This may seem a bit overkill but doesn't take very long.
+
+```
+$ sudo yum groupinstall 'development tools'
+```
+
+And then
+
+```
+$ sudo yum install bzip2-devel expat-devel gdbm-devel \
+    ncurses-devel openssl-devel readline-devel wget \
+    sqlite-devel tk-devel xz-devel zlib-devel libffi-devel
+```
+
+Here we install Python 3.9.6 but you can check for the download link for a version you'd like to download here: https://www.python.org/downloads/source/ 
+
+Now we download the source tarball
+
+```
+$ wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz
+$ tar xf Python-3.9.6.tgz
+$ cd Python-3.9.6/
+```
+
+Now we can go through the build process
+
+```
+$ ./configure --enable-optimizations
+$ make -j 4
+```
+
+Now we can install the version we've built, using `altinstall` avoids overwriting the system python install.
+
+```
+$ sudo make altinstall
+```
+
+Now we can check everything has worked correctly:
+
+```
+python3.9 --version
+```
+
+#### Setup a virtual environment
+
+Now we'll setup a virtual environment to keep everything in one place.
+
+```
+$ mkdir -p ~/env/
+$ python3.9 -m venv ~/env/acquire
+$ source ~/env/acquire/bin/activate
+```
+
+From now on, as long as we are in this environment, we can use `python` instead of `python3.9`. If you need to activate the environment again
+just run the last command above.
+
 ## Step 5 - Create users for each service
 
 Make sure that you have created Oracle user accounts for each

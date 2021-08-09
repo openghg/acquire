@@ -426,7 +426,7 @@ class User:
 
         try:
             provisioning_uri = result["provisioning_uri"]
-        except:
+        except KeyError:
             from Acquire.Client import UserError
 
             raise UserError(

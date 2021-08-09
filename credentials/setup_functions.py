@@ -6,8 +6,16 @@ import pprint
 import secrets
 import subprocess
 import sys
+import os
 from pathlib import Path
 from collections import defaultdict
+
+sys.path.insert(0, "..")
+
+# Check in case the ACQUIRE_HOST env variable isn't set, this will most likely be running
+# on the Fn server so check
+if os.environ.get("ACQUIRE_HOST") is None:
+    os.environ["ACQUIRE_HOST"] = "localhost"
 
 from Acquire.Crypto import PrivateKey
 from Acquire.ObjectStore import bytes_to_string
