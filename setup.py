@@ -3,31 +3,34 @@ import setuptools
 
 def get_version():
     """get_version - thanks to
-       https://milkr.io/kfei/5-common-patterns-to-version-your-Python-package
+    https://milkr.io/kfei/5-common-patterns-to-version-your-Python-package
     """
     import os
     import re
-    VERSIONFILE = os.path.join('Acquire', '__init__.py')
-    initfile_lines = open(VERSIONFILE, 'rt').readlines()
+
+    VERSIONFILE = os.path.join("Acquire", "__init__.py")
+    initfile_lines = open(VERSIONFILE, "rt").readlines()
     VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
     for line in initfile_lines:
         mo = re.search(VSRE, line, re.M)
         if mo:
             return mo.group(1)
-    raise RuntimeError('Unable to find version string in %s.' % (VERSIONFILE,))
+    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
 
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+with open("requirements.txt") as f:
+    requirements = f.read().splitlines()
+
 setuptools.setup(
     name="acquire",
     version=get_version(),
-    python_requires='>=3.6.0',
+    python_requires=">=3.7.0",
     author="Christopher Woods",
     author_email="chryswoods@gmail.com",
-    description="A serverless identity, access, accounting, storage and "
-                "compute management system",
+    description="A serverless identity, access, accounting, storage and compute management system",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/chryswoods/acquire",
@@ -39,17 +42,9 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-           "acquire_login = Acquire.Client.Scripts.__acquire_login__:main",
-           "aq = Acquire.Client.Scripts.__aq__:main"
+            "acquire_login = Acquire.Client.Scripts.__acquire_login__:main",
+            "aq = Acquire.Client.Scripts.__aq__:main",
         ]
     },
-    install_requires=[
-        "pyotp>=2",
-        "cachetools>=3",
-        "tblib>=1.2",
-        "cryptography>=2",
-        "pyyaml>=3.0",
-        "requests>=2.10",
-        "qrcode[pil]>=5.0"
-    ]
+    install_requires=requirements,
 )
