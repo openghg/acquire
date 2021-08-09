@@ -116,7 +116,7 @@ $ sudo yum install certbot python3-certbot-nginx
 Now we can get the certificate
 
 ```
-$ sudo certbot --nginx -d fn.openghg.org
+$ sudo certbot --nginx -d acquire.openghg.org
 ```
 
 

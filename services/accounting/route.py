@@ -32,13 +32,13 @@ async def handle_invocation(ctx: InvokeContext, data: BytesIO) -> Response:
         Response: Fn FDK response object containing function call data
         and data returned from function call
     """
-    from admin.handler import handle_call
-    import traceback
+    from Acquire.Service import handle_call
+    from traceback import format_tb
 
     try:
         data = data.getvalue()
     except Exception:
-        error_str = str(traceback.format_tb())
+        error_str = str(format_tb())
         return Response(ctx=ctx, response_data=error_str)
 
     returned_data = handle_call(data=data, routing_function=route)

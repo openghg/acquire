@@ -9,12 +9,14 @@ from ._function import *
 from ._get_session_info import *
 from ._get_services import *
 from ._get_service_account_bucket import *
+from ._handlers import create_handle, handle_call
 from ._service_account import *
 from ._service import *
 from ._profile import *
 from ._errors import *
 from ._cache_management import *
 from ._trust_service import *
+
 
 try:
     if __IPYTHON__:
